@@ -39,9 +39,9 @@ ER-модель д.б. представлена в виде ER-диаграмм�
 </h3>
 
 #### №1.1 ER-модель
-![image](/pictures/ER_last.png)
+![image](/pictures/ER-модель.png)
 #### №1.2 Реляционная модель
-![image](/pictures/Relation_last.png)
+![image](/pictures/Реляционная_модель.png)
 
 <p align="center">
   <a href="#-lab2"><img alt="lab2" src="https://img.shields.io/badge/Lab2-red"></a> 
