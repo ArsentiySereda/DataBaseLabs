@@ -57,5 +57,6 @@ ER-модель д.б. представлена в виде ER-диаграмм�
 #### Диаграмма
 ![image](/pictures/Diagram.png)
 #### Заполнение таблиц
-![image](/pictures/lab2output1.jpg)
-![image](/pictures/lab2output2.jpg)
+![image](/pictures/output1.png)
+![image](/pictures/output2.png)
+![image](/pictures/output3.png)
