@@ -1,21 +1,21 @@
 
-drop table if exists Client;
-drop table if exists [Credit record];
-drop table if exists [Credit product];
-drop table if exists Client_product;
-drop table if exists Penalty;
-drop table if exists Deal;
 drop table if exists Payment;
+drop table if exists Deal;
+drop table if exists [Credit history];
+drop table if exists Client_product;
+drop table if exists Client;
+drop table if exists [Credit product];
+drop table if exists Penalty;
 
 CREATE TABLE Client(
 	id INT PRIMARY KEY IDENTITY,
-	phone_number VARCHAR(20) NOT NULL CHECK (phone_number LIKE '+_-___-___-__-__' OR phone_number LIKE '+___________'),
+	phone_number VARCHAR(20) NOT NULL CHECK (phone_number LIKE '+7__________' OR phone_number LIKE '8__________'),
 	contact_person NVARCHAR(100) NOT NULL,
 	company NVARCHAR(200) NOT NULL,
-	position NVARCHAR(250) NOT NULL
+	address NVARCHAR(250) NOT NULL
 );
 
-CREATE TABLE [Credit record](
+CREATE TABLE [Credit history](
 	id INT PRIMARY KEY IDENTITY,
 	client_id INT NOT NULL,
 	bank VARCHAR(200) NOT NULL,
@@ -89,19 +89,19 @@ CREATE TABLE Payment(
 	FOREIGN KEY (deal_id) REFERENCES Deal(id),
 );
 
-INSERT INTO Client (phone_number, contact_person, company, position) VALUES
-	('+7-916-123-45-67', 'Иванов Иван', 'ООО "Ведро"', 'Москва, Ленина 1'),
-	('+7-926-987-65-43', 'Петрова Анна', 'ЗАО "Вектор"', 'СПб, Невский 50'),
-	('+79031112233', 'Сидоров Алексей', 'ИП Сидоров', 'Екатеринбург, Малышева 25'),
+INSERT INTO Client (phone_number, contact_person, company, address) VALUES
+	('+79161234567', 'Иванов Иван', 'ООО "Ведро"', 'Москва, Ленина 1'),
+	('89269876543', 'Петрова Анна', 'ЗАО "Вектор"', 'СПб, Невский 50'),
+	('89031112233', 'Сидоров Алексей', 'ЗАО "Виктор"', 'Екатеринбург, Малышева 25'),
 	('+79557778899', 'Козлова Мария', 'ООО "Техно"', 'Новосибирск, Красный 100'),
 	('+79991234567', 'Смирнов Дмитрий', 'АО "ДомСтрой"', 'Казань, Баумана 15'),
 	('+79105556677', 'Федорова Екатерина', 'ООО "Торг уместен"', 'Ростов-на-Дону, Садовая 10'),
 	('+79224448899', 'Николаев Артем', 'ИП Николаев', 'Владивосток, Светланская 5'),
-	('+79058889900', 'Орлова Светлана', 'ЗАО "Регресс"', 'Нижний Новгород, Рождественская 8'),
+	('89058889900', 'Орлова Светлана', 'ЗАО "Регресс"', 'Нижний Новгород, Рождественская 8'),
 	('+79651112233', 'Васильев Павел', 'ООО "ЭнергоСбыт"', 'Самара, Куйбышева 30'),
 	('+79998887766', 'Алексеева Ольга', 'АО "ЧерМет"', 'Краснодар, Красная 20');
 
-INSERT INTO [Credit record] (client_id, bank, number, amount, repayment_date, is_penal) VALUES
+INSERT INTO [Credit history] (client_id, bank, number, amount, repayment_date, is_penal) VALUES
 	(1, 'Сбербанк', 275712, 500000.00, '2024-03-15', 0),
 	(2, 'ВТБ', 28563, 1500000.00, '2024-01-20', 1),
 	(3, 'Альфа-Банк', 385763, 750000.50, '2024-02-10', 0),
@@ -166,10 +166,9 @@ INSERT INTO Payment (penalty_id, deal_id, amount, accrual_date, actual_payment_d
 
 
 SELECT * FROM Client;
-SELECT * FROM [Credit record];	
+SELECT * FROM [Credit history];	
 SELECT * FROM Payment;
 SELECT * FROM Client_product;
 SELECT * FROM Deal;
 SELECT * FROM Penalty;
-SELECT * FROM [Credit product];
-
+SELECT * FROM Client 
