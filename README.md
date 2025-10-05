@@ -2,7 +2,8 @@
 </a> MSSQL</h1>
 
 <p align="center">
-  <a href="#-lab1"><img alt="lab1" src="https://img.shields.io/badge/Lab1-blue"></a> 
+  <a href="#-lab1"><img alt="lab1" src="https://img.shields.io/badge/Lab1-blue"></a>
+  <a href="#-lab2"><img alt="lab2" src="https://img.shields.io/badge/Lab2-red"></a> 
 </p>
 <h3 align="center">
   <a href="#client"></a>
@@ -43,9 +44,8 @@ ER-модель д.б. представлена в виде ER-диаграмм�
 #### №1.2 Реляционная модель
 ![image](/pictures/Реляционная_модель.png)
 
-<p align="center">
-  <a href="#-lab2"><img alt="lab2" src="https://img.shields.io/badge/Lab2-red"></a> 
-</p>
+# <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab2
+[Назад](#content)
 <h3 align="center">
   <a href="#client"></a>
   В соответствии с реляционной моделью данных, разработанной в Лаб.№1, создать реляционную БД на учебном сервере БД :
@@ -56,6 +56,9 @@ ER-модель д.б. представлена в виде ER-диаграмм�
 
 #### Диаграмма
 ![image](/pictures/Diagram.png)
+
+#### Создание таблиц
+![file](/"lab2 finished.sql")
 #### Заполнение таблиц
 ![image](/pictures/output1.png)
 ![image](/pictures/output2.png)
