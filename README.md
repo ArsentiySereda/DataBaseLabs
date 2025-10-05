@@ -58,7 +58,7 @@ ER-модель д.б. представлена в виде ER-диаграмм�
 ![image](/pictures/Diagram.png)
 
 #### Создание таблиц
-![lab2_finished.sql](/lab2_finished.sql)
+[lab2_finished.sql](/lab2_finished.sql)
 #### Заполнение таблиц
 ![image](/pictures/output1.png)
 ![image](/pictures/output2.png)
