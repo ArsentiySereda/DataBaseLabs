@@ -4,7 +4,7 @@
 <p align="center">
   <a href="#-lab1"><img alt="lab1" src="https://img.shields.io/badge/Lab1-blue"></a>
   <a href="#-lab2"><img alt="lab2" src="https://img.shields.io/badge/Lab2-red"></a> 
-  <a href="#-lab2"><img alt="lab3" src="https://img.shields.io/badge/Lab3-yellow"></a> 
+  <a href="#-lab3"><img alt="lab3" src="https://img.shields.io/badge/Lab3-yellow"></a> 
 </p>
 <h3 align="center">
   <a href="#client"></a>
