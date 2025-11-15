@@ -268,7 +268,7 @@ GO
 SELECT * FROM dbo.GetUnusedProducts();
 
 </code></pre>
-<img src="pictures//lab4_pics/2b.png" alt="2b" width="800">
+<img src="pictures//lab4_pics/2b.png" alt="2b" width="900">
     <li><b> Multi-statement-функция, выдающая список клиентов, бравших кредиты в нашем банке более 1 раза и при этом всегда выплачивавших их вовремя
 </li>
 <pre><code>
@@ -316,7 +316,7 @@ GO
 SELECT * FROM dbo.GetReliableClients();
 
 </code></pre>
-<img src="pictures//lab4_pics/2с.png" alt="2c" width="400">
+<img src="pictures//lab4_pics/2с.png" alt="2c" width="700">
    </ol>
 
   <h4>Создать  3 триггера:</h4>
