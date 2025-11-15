@@ -246,7 +246,7 @@ GO
 SELECT dbo.CalculateYearRevenueByProduct(1) AS revenue;
 
 </code></pre>
-<img src="pictures//lab4_pics/2a.png" alt="2a" width="800">
+<img src="pictures//lab4_pics/2a.png" alt="2a" width="300">
     <li><b>Inline-функция, возвращающая список кредитов, которые не были ни разу выбраны клиентами с начала текущего года </li>
 <pre><code>
 GO
@@ -268,7 +268,7 @@ GO
 SELECT * FROM dbo.GetUnusedProducts();
 
 </code></pre>
-<img src="pictures//lab4_pics/2b.png" alt="2b" width="500">
+<img src="pictures//lab4_pics/2b.png" alt="2b" width="800">
     <li><b> Multi-statement-функция, выдающая список клиентов, бравших кредиты в нашем банке более 1 раза и при этом всегда выплачивавших их вовремя
 </li>
 <pre><code>
@@ -451,7 +451,7 @@ SET rate =
 WHERE id IN (1, 2, 3, 4, 5);
 SELECT TOP 6 * FROM Deal; 
 </code></pre>
-<img src="pictures//lab4_pics/3b.png" alt="3b" width="500">
+<img src="pictures//lab4_pics/3b.png" alt="3b" width="700">
     <li><b> Замещающий триггер на операцию удаления клиента – если у него есть непогашенные кредиты, клиента не удаляем, в противном случае - удаляем </li>
 <pre><code>
 GO
@@ -493,6 +493,6 @@ SELECT * FROM Client
 DELETE FROM Client WHERE company LIKE ('ООО %');
 SELECT * FROM Client
 </code></pre>
-<img src="pictures//lab4_pics/3c.png" alt="3c" width="400">
+<img src="pictures//lab4_pics/3c.png" alt="3c" width="700">
 	</ol>
 </div>
