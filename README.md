@@ -375,7 +375,6 @@ BEGIN
     CLOSE deal_cursor;
     DEALLOCATE deal_cursor;    
     DROP TABLE #ReliableClients;    
-    PRINT '====== ОБРАБОТКА ЗАВЕРШЕНА ======';
 END;
 GO 
 SELECT TOP 4 * FROM Deal ORDER BY id DESC; 
@@ -416,7 +415,6 @@ BEGIN
         
         WHILE @@FETCH_STATUS = 0
         BEGIN
-            -- Проверяем условия для отката
             IF (DATEADD(MONTH, @period, @deal_start) > GETDATE() AND @rest > 0) OR
                (@new_rate > @old_rate * 1.1)
             BEGIN
@@ -468,7 +466,6 @@ BEGIN
     FETCH NEXT FROM c INTO @client_id, @company;    
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        -- Проверяем есть ли непогашенные кредиты
         IF EXISTS (SELECT 1 FROM Deal WHERE client_id = @client_id AND rest > 0)
         BEGIN
             PRINT 'Удаление запрещено: клиент "' + @company + '" имеет непогашенные кредиты';
