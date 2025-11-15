@@ -246,7 +246,7 @@ GO
 SELECT dbo.CalculateYearRevenueByProduct(1) AS revenue;
 
 </code></pre>
-<img src="pictures//lab4_pics/1a.png" alt="2a" width="800">
+<img src="pictures//lab4_pics/2a.png" alt="2a" width="800">
     <li><b>Inline-функция, возвращающая список кредитов, которые не были ни разу выбраны клиентами с начала текущего года </li>
 <pre><code>
 GO
@@ -268,7 +268,7 @@ GO
 SELECT * FROM dbo.GetUnusedProducts();
 
 </code></pre>
-<img src="pictures//lab4_pics/1b.png" alt="2b" width="500">
+<img src="pictures//lab4_pics/2b.png" alt="2b" width="500">
     <li><b> Multi-statement-функция, выдающая список клиентов, бравших кредиты в нашем банке более 1 раза и при этом всегда выплачивавших их вовремя
 </li>
 <pre><code>
@@ -316,8 +316,183 @@ GO
 SELECT * FROM dbo.GetReliableClients();
 
 </code></pre>
-<img src="pictures//lab4_pics/1c.png" alt="2c" width="500">
-   
-  </ol>
+<img src="pictures//lab4_pics/2c.png" alt="2c" width="400">
+   </ol>
 
+  <h4>Создать  3 триггера:</h4>
+  <ol type="a">
+    <li><b>Триггер любого типа на добавление (заключение) договора по кредиту – если этот клиент брал кредиты ранее и при этом не всегда выплачивал их вовремя, 
+то договор не заключается. Если клиент брал кредиты 2 и более раз и всегда выплачивал в срок, то заключается договор с льготной процентной ставкой</li>
+<pre><code>
+GO
+CREATE TRIGGER ReliabilityTrigger
+ON Deal
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @client_id INT;
+    DECLARE @product_id INT;
+    DECLARE @deal_start DATE;
+    DECLARE @amount DECIMAL(20,2);
+    DECLARE @period_ INT;
+    DECLARE @rate DECIMAL(4,2);    
+    SELECT * INTO #ReliableClients FROM dbo.GetReliableClients();    
+    DECLARE deal_cursor CURSOR FOR
+    SELECT 
+        client_id, product_id, deal_start, amount, period_, rate
+    FROM inserted;    
+    OPEN deal_cursor;
+    FETCH NEXT FROM deal_cursor INTO 
+        @client_id, @product_id, @deal_start, @amount, @period_, @rate;    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        IF EXISTS (SELECT 1 FROM #ReliableClients WHERE client_id = @client_id)
+        BEGIN
+            INSERT INTO Deal (client_id, product_id, deal_start, amount, period_, rate)
+            VALUES (@client_id, @product_id, @deal_start, @amount, @period_, @rate);            
+            PRINT 'ОДОБРЕНО: Клиент ID ' + CAST(@client_id AS VARCHAR) + 
+                  ' является надежным заемщиком. Договор заключен.';
+        END
+        ELSE
+        BEGIN
+            IF EXISTS (SELECT 1 FROM Deal WHERE client_id = @client_id)
+            BEGIN
+                PRINT 'ОТКЛОНЕНО: Клиент ID ' + CAST(@client_id AS VARCHAR) + 
+                      ' имеет историю просрочек платежей. Договор не может быть заключен.';
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Deal (client_id, product_id, deal_start, amount, period_, rate)
+                VALUES (@client_id, @product_id, @deal_start, @amount, @period_, @rate);                
+                PRINT 'ОДОБРЕНО: Новый клиент ID ' + CAST(@client_id AS VARCHAR) + 
+                      '. Договор заключен.';
+            END
+        END        
+        FETCH NEXT FROM deal_cursor INTO 
+            @client_id, @product_id, @deal_start, @amount, @period_, @rate;
+    END
+    CLOSE deal_cursor;
+    DEALLOCATE deal_cursor;    
+    DROP TABLE #ReliableClients;    
+    PRINT '====== ОБРАБОТКА ЗАВЕРШЕНА ======';
+END;
+GO 
+SELECT TOP 4 * FROM Deal ORDER BY id DESC; 
+INSERT INTO Deal (client_id, product_id, deal_start, amount, period_, rate)
+VALUES 
+(11, 1, '2025-11-05', 800000.00, 24, 12.5),
+(3, 3, '2025-11-05', 900000.00, 18, 13.0); 
+SELECT TOP 4 * FROM Deal ORDER BY id DESC
+
+
+</code></pre>
+<img src="pictures//lab4_pics/3a.png" alt="3a" width="800">
+    <li><b>Последующий триггер на изменение процентной ставки по кредиту – 
+если на данный кредит заключены договора, и срок оплаты еще не наступил, процентную ставку не меняем, 
+в противном случае ставку можно изменить не более чем в 1.1 раза </li>
+<pre><code>
+GO
+CREATE TRIGGER ControlRateChange
+ON Deal
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF UPDATE(rate)
+    BEGIN
+        DECLARE @id INT, @old_rate DECIMAL(4,2), @new_rate DECIMAL(4,2), 
+                @deal_start DATE, @period INT, @rest DECIMAL(20,2);
+        
+        DECLARE c CURSOR FOR
+            SELECT i.id, d.rate, i.rate, d.deal_start, d.period_, d.rest
+            FROM inserted i 
+            JOIN deleted d ON i.id = d.id 
+            WHERE d.rate <> i.rate;
+        
+        OPEN c;
+        FETCH NEXT FROM c INTO @id, @old_rate, @new_rate, @deal_start, @period, @rest;
+        
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- Проверяем условия для отката
+            IF (DATEADD(MONTH, @period, @deal_start) > GETDATE() AND @rest > 0) OR
+               (@new_rate > @old_rate * 1.1)
+            BEGIN
+                UPDATE Deal SET rate = @old_rate WHERE id = @id;
+                PRINT 'Откат ставки: кредит ' + CAST(@id AS VARCHAR) + 
+                      ' (' + CAST(@old_rate AS VARCHAR) + '% → ' + CAST(@new_rate AS VARCHAR) + '%)';
+            END
+            ELSE
+            BEGIN
+                PRINT 'Ставка изменена: кредит ' + CAST(@id AS VARCHAR) + 
+                      ' (' + CAST(@old_rate AS VARCHAR) + '% → ' + CAST(@new_rate AS VARCHAR) + '%)';
+            END
+            
+            FETCH NEXT FROM c INTO @id, @old_rate, @new_rate, @deal_start, @period, @rest;
+        END
+        
+        CLOSE c;
+        DEALLOCATE c;
+    END
+END;
+GO
+SELECT TOP 6 * FROM Deal; 
+UPDATE Deal 
+SET rate = 
+    CASE 
+        WHEN id = 1 THEN 18.0
+        WHEN id = 2 THEN rate * 1.08
+        WHEN id = 3 THEN rate * 1.15
+        WHEN id = 4 THEN rate * 0.9
+        WHEN id = 5 THEN rate * 1.1
+    END
+WHERE id IN (1, 2, 3, 4, 5);
+SELECT TOP 6 * FROM Deal; 
+</code></pre>
+<img src="pictures//lab4_pics/3b.png" alt="3b" width="500">
+    <li><b> Замещающий триггер на операцию удаления клиента – если у него есть непогашенные кредиты, клиента не удаляем, в противном случае - удаляем </li>
+<pre><code>
+GO
+CREATE TRIGGER InsteadClientDelete
+ON Client
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;    
+    DECLARE @client_id INT, @company NVARCHAR(200);
+    DECLARE c CURSOR FOR
+        SELECT d.id, d.company FROM deleted d;    
+    OPEN c;
+    FETCH NEXT FROM c INTO @client_id, @company;    
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Проверяем есть ли непогашенные кредиты
+        IF EXISTS (SELECT 1 FROM Deal WHERE client_id = @client_id AND rest > 0)
+        BEGIN
+            PRINT 'Удаление запрещено: клиент "' + @company + '" имеет непогашенные кредиты';
+        END
+        ELSE
+        BEGIN
+            -- Удаляем связанные данные и клиента
+            DELETE FROM Payment WHERE deal_id IN (SELECT id FROM Deal WHERE client_id = @client_id);
+            DELETE FROM Deal WHERE client_id = @client_id;
+            DELETE FROM Client_product WHERE client_id = @client_id;
+            DELETE FROM [Credit history] WHERE client_id = @client_id;
+            DELETE FROM Client WHERE id = @client_id;            
+            PRINT 'Клиент "' + @company + '" удален';
+        END        
+        FETCH NEXT FROM c INTO @client_id, @company;
+    END    
+    CLOSE c;
+    DEALLOCATE c;
+END;
+GO
+SELECT * FROM Client
+DELETE FROM Client WHERE company LIKE ('ООО %');
+SELECT * FROM Client
+</code></pre>
+<img src="pictures//lab4_pics/3c.png" alt="3c" width="400">
+	</ol>
 </div>
