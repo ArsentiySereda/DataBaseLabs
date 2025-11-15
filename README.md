@@ -316,7 +316,7 @@ GO
 SELECT * FROM dbo.GetReliableClients();
 
 </code></pre>
-<img src="pictures//lab4_pics/2c.png" alt="2c" width="400">
+<img src="pictures//lab4_pics/2с.png" alt="2c" width="400">
    </ol>
 
   <h4>Создать  3 триггера:</h4>
