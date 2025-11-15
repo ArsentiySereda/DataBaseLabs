@@ -450,6 +450,7 @@ WHERE id IN (1, 2, 3, 4, 5);
 SELECT TOP 6 * FROM Deal; 
 </code></pre>
 <img src="pictures//lab4_pics/3b.png" alt="3b" width="700">
+<img src="pictures//lab4_pics/3b1.png" alt="3b1" width="700">
     <li><b> Замещающий триггер на операцию удаления клиента – если у него есть непогашенные кредиты, клиента не удаляем, в противном случае - удаляем </li>
 <pre><code>
 GO
@@ -472,7 +473,6 @@ BEGIN
         END
         ELSE
         BEGIN
-            -- Удаляем связанные данные и клиента
             DELETE FROM Payment WHERE deal_id IN (SELECT id FROM Deal WHERE client_id = @client_id);
             DELETE FROM Deal WHERE client_id = @client_id;
             DELETE FROM Client_product WHERE client_id = @client_id;
@@ -491,5 +491,6 @@ DELETE FROM Client WHERE company LIKE ('ООО %');
 SELECT * FROM Client
 </code></pre>
 <img src="pictures//lab4_pics/3c.png" alt="3c" width="700">
+<img src="pictures//lab4_pics/3c1.png" alt="3c1" width="700">
 	</ol>
 </div>
