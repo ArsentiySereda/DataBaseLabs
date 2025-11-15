@@ -120,7 +120,7 @@ END;
 GO
 EXECUTE Unscrupulous_Clients;
 </code></pre>
-<img src="pictures//lab4_pics/1a.png" alt="1a" width="500">
+<img src="pictures//lab4_pics/1a.png" alt="1a" width="800">
     <li><b> Процедура, на входе получающая название клиента и формирующая список с его кредитными историями в виде: название клиента, название банка, дата выдачи кредита, дата фактического погашения </li>
 <pre><code>
 GO
@@ -214,6 +214,110 @@ GO
 EXECUTE Clients_With_Popular_Product;
 
 </code></pre>
-<img src="pictures//lab4_pics/1d.png" alt="1d" width="500">
+<img src="pictures//lab4_pics/1d.png" alt="1d" width="700">
   </ol>
+
+  <h4>Создать  3 функции:</h4>
+  <ol type="a">
+    <li><b>Скалярная функция,которая для заданного кредита подсчитывает выручку банка в текущем году</li>
+<pre><code>
+GO
+CREATE FUNCTION CalculateYearRevenueByProduct(@product_id INT)
+RETURNS DECIMAL(20,2)
+AS
+BEGIN
+    DECLARE @year_revenue DECIMAL(20,2);
+    SELECT @year_revenue = ISNULL(SUM(
+        p.in_main_debt * (d.rate/100) +  
+        ISNULL(pen.amount, 0) +    
+        p.in_early_repayment * 0.01    
+    ), 0)
+    FROM Deal d
+    LEFT JOIN Payment p ON d.id = p.deal_id 
+        AND p.actual_payment_date IS NOT NULL
+        AND YEAR(p.actual_payment_date) = YEAR(GETDATE())
+    LEFT JOIN Penalty pen ON p.penalty_id = pen.id 
+        AND pen.is_paid = 1
+        AND YEAR(pen.accrual_date) = YEAR(GETDATE())
+    WHERE d.product_id = @product_id;  
+	RETURN @year_revenue;
+END;
+GO
+SELECT dbo.CalculateYearRevenueByProduct(1) AS revenue;
+
+</code></pre>
+<img src="pictures//lab4_pics/1a.png" alt="2a" width="800">
+    <li><b>Inline-функция, возвращающая список кредитов, которые не были ни разу выбраны клиентами с начала текущего года </li>
+<pre><code>
+GO
+CREATE FUNCTION GetUnusedProducts()
+RETURNS TABLE
+AS 
+RETURN
+    SELECT
+        *
+    FROM
+        [Credit product]
+    WHERE
+        [Credit product].id NOT IN (
+            SELECT DISTINCT d.product_id     
+            FROM Deal d
+            WHERE  d.deal_start >= DATEFROMPARTS(YEAR(GETDATE()),1,1)
+        )
+GO
+SELECT * FROM dbo.GetUnusedProducts();
+
+</code></pre>
+<img src="pictures//lab4_pics/1b.png" alt="2b" width="500">
+    <li><b> Multi-statement-функция, выдающая список клиентов, бравших кредиты в нашем банке более 1 раза и при этом всегда выплачивавших их вовремя
+</li>
+<pre><code>
+GO
+CREATE FUNCTION GetReliableClients()
+RETURNS @ReliableClients TABLE (
+    client_id INT,
+    company_name NVARCHAR(200),
+    contact_person NVARCHAR(100),
+    loans_count INT,
+    total_amount DECIMAL(20,2)
+)
+AS
+BEGIN
+    INSERT INTO @ReliableClients
+    SELECT 
+        c.id,
+        c.company,
+        c.contact_person,
+        COUNT(DISTINCT d.id) AS loans_count,
+        SUM(d.amount) AS total_amount
+    FROM 
+        Client c
+        JOIN Deal d ON c.id = d.client_id
+    WHERE 
+        c.id IN (
+            SELECT client_id 
+            FROM Deal 
+            GROUP BY client_id 
+            HAVING COUNT(*) > 1
+        )
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM Payment p 
+            JOIN Deal d2 ON p.deal_id = d2.id 
+            WHERE d2.client_id = c.id 
+                AND p.actual_payment_date IS NULL 
+                AND p.accrual_date < DATEADD(MONTH, -1, GETDATE())
+        )
+    GROUP BY 
+        c.id, c.company, c.contact_person;
+    RETURN;
+END;
+GO
+SELECT * FROM dbo.GetReliableClients();
+
+</code></pre>
+<img src="pictures//lab4_pics/1c.png" alt="2c" width="500">
+   
+  </ol>
+
 </div>
