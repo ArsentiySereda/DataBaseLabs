@@ -387,7 +387,7 @@ SELECT TOP 4 * FROM Deal ORDER BY id DESC
 
 </code></pre>
 <img src="pictures//lab4_pics/3a.png" alt="3a" width="800">
-<img src="pictures//lab4_pics/3a.png" alt="3c1" width="800">
+<img src="pictures//lab4_pics/3c1.png" alt="3c1" width="800">
     <li><b>Последующий триггер на изменение процентной ставки по кредиту – 
 если на данный кредит заключены договора, и срок оплаты еще не наступил, процентную ставку не меняем, 
 в противном случае ставку можно изменить не более чем в 1.1 раза </li>
@@ -492,6 +492,6 @@ DELETE FROM Client WHERE company LIKE ('ООО %');
 SELECT * FROM Client
 </code></pre>
 <img src="pictures//lab4_pics/3c.png" alt="3c" width="700">
-<img src="pictures//lab4_pics/3c1.png" alt="3a1" width="700">
+<img src="pictures//lab4_pics/3a1.png" alt="3a1" width="700">
 	</ol>
 </div>
