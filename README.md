@@ -6,6 +6,7 @@
   <a href="#-lab2"><img alt="lab2" src="https://img.shields.io/badge/Lab2-red"></a> 
   <a href="#-lab3"><img alt="lab3" src="https://img.shields.io/badge/Lab3-yellow"></a> 
   <a href="#-lab4"><img alt="lab4" src="https://img.shields.io/badge/Lab4-purple"></a> 
+  <a href="#-lab4"><img alt="lab4" src="https://img.shields.io/badge/Lab4-green"></a> 
 </p>
 <h3 align="center">
   <a href="#client"></a>
@@ -495,3 +496,7 @@ SELECT * FROM Client
 <img src="pictures//lab4_pics/3a1.png" alt="3a1" width="700">
 	</ol>
 </div>
+# <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab6
+[Назад](#content)
+<h3 align="center">
+  <a href="#client"></a>
