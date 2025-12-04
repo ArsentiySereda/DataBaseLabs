@@ -506,7 +506,7 @@ SELECT * FROM Client
 <div>
 <li><b>Используйте реляционную БД из лабораторной работы №2.
 Продумайте и создайте графовые таблицы по реляционной БД</li>
-<img src="pictures//diag6.png" alt="diag6.png" width="700">
+<img src="pictures//diag6.png" alt="diag6.png" width="800">
 <li><b>Заполнение графовых таблиц используя данные из реляционных таблиц.</li>
 <pre><code>
 	DROP TABLE IF EXISTS HAS_HISTORY;
@@ -680,7 +680,7 @@ FROM
 WHERE 
     MATCH(c-(chh)->ch);
 </code></pre>
-<img src="pictures//lab6_pics/1.jpg" alt="1" width="700">
+<img src="pictures//lab6_pics/1.jpg" alt="1" width="800">
 
 2. Вывод существующих сделок с указанием названия выбранного кредитного продукта
 <pre><code>
@@ -692,7 +692,7 @@ WHERE
     MATCH(d-(dup)->cp);
 
 </code></pre>
-<img src="pictures//lab6_pics/2.jpg" alt="2" width="700">
+<img src="pictures//lab6_pics/2.jpg" alt="2" width="800">
 
 3. Вывод размера сделок с поступившими на них платежами
 <pre><code>
@@ -703,7 +703,7 @@ FROM
 WHERE 
     MATCH(p-(pfd)->d);
 </code></pre>
-<img src="pictures//lab6_pics/3.jpg" alt="3" width="700">
+<img src="pictures//lab6_pics/3.jpg" alt="3" width="800">
 
 4. Все кредитные продукты и сделки по ним 
 <pre><code>
@@ -722,7 +722,7 @@ FROM
 ORDER BY 
     cp.title;
 </code></pre>
-<img src="pictures//lab6_pics/4.jpg" alt="4" width="700">
+<img src="pictures//lab6_pics/4.jpg" alt="4" width="800">
 
 5. Клиенты с общей суммой кредитов более 1 млн
 <pre><code>
@@ -738,7 +738,7 @@ GROUP BY
 HAVING 
     SUM(ch.amount) > 1000000;
 </code></pre>
-<img src="pictures//lab6_pics/5.jpg" alt="5" width="700">
+<img src="pictures//lab6_pics/5.jpg" alt="5" width="800">
 
 6. Статистика использования кредитных продуктов
 <pre><code>
@@ -753,7 +753,7 @@ FROM
 GROUP BY 
     cp.title, cp.id;
 </code></pre>
-<img src="pictures//lab6_pics/6.jpg" alt="6" width="700">
+<img src="pictures//lab6_pics/6.jpg" alt="6" width="800">
 
 7. Клиенты, у которых есть неоплаченные штрафы 
 <pre><code>
@@ -771,6 +771,6 @@ WHERE
           AND ch.is_penal = 1
     );
 </code></pre>
-<img src="pictures//lab6_pics/7.jpg" alt="7" width="700">
+<img src="pictures//lab6_pics/7.jpg" alt="7" width="800">
 </div>
 
