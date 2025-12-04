@@ -505,7 +505,7 @@ SELECT * FROM Client
 <div>
 <li><b>Используйте реляционную БД из лабораторной работы №2.
 Продумайте и создайте графовые таблицы по реляционной БД</li>
-<img src="pictures/diag6.jpg" alt="diag6" width="900">
+<img src="pictures/diag6.png" alt="diag6.png" width="700">
 <li><b>Заполнение графовых таблиц используя данные из реляционных таблиц.</li>
 <pre><code>
 	DROP TABLE IF EXISTS HAS_HISTORY;
