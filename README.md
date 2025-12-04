@@ -505,7 +505,7 @@ SELECT * FROM Client
 <div>
 <li><b>Используйте реляционную БД из лабораторной работы №2.
 Продумайте и создайте графовые таблицы по реляционной БД</li>
-<img src="pictures/diag6.png" alt="3b" width="900">
+<img src="pictures/diag6.jpg" alt="diag6" width="900">
 <li><b>Заполнение графовых таблиц используя данные из реляционных таблиц.</li>
 <pre><code>
 	DROP TABLE IF EXISTS HAS_HISTORY;
@@ -678,5 +678,5 @@ FROM
 WHERE 
     MATCH(c-(chh)->ch);
 </code></pre>
-<img src="pictures//lab6_pics/1.png" alt="3c" width="900">
+<img src="pictures//lab6_pics/1.jpg" alt="1" width="700">
 </div>
