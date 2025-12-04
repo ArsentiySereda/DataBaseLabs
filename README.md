@@ -501,11 +501,12 @@ SELECT * FROM Client
 [Назад](#content)
 <h3 align="center">
   <a href="#client"></a>
+	
   Создание графовых таблиц и работа с ними.
 <div>
 <li><b>Используйте реляционную БД из лабораторной работы №2.
 Продумайте и создайте графовые таблицы по реляционной БД</li>
-<img src="pictures/diag6.png" alt="diag6.png" width="700">
+<img src="pictures//diag6.png" alt="diag6.png" width="700">
 <li><b>Заполнение графовых таблиц используя данные из реляционных таблиц.</li>
 <pre><code>
 	DROP TABLE IF EXISTS HAS_HISTORY;
@@ -668,8 +669,9 @@ GO
 </code></pre>
 <li><b>Напишите запросы из задания 3.2 используя паттерн MATCH.
 Сравните полученные результаты  с  результатами запросов к реляционной модели.
+</li>
+	
 1. Краткий вывод кредитной истории клиентов с именами кредиторов
-</b></li>
 <pre><code>
 SELECT 
     c.contact_person, ch.bank, ch.amount 
