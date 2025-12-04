@@ -681,4 +681,96 @@ WHERE
     MATCH(c-(chh)->ch);
 </code></pre>
 <img src="pictures//lab6_pics/1.jpg" alt="1" width="700">
+
+2. Вывод существующих сделок с указанием названия выбранного кредитного продукта
+<pre><code>
+SELECT 
+    d.amount, cp.title 
+FROM 
+    _Deal d, _Credit_product cp, DEAL_USES_PRODUCT dup
+WHERE 
+    MATCH(d-(dup)->cp);
+
+</code></pre>
+<img src="pictures//lab6_pics/2.jpg" alt="2" width="700">
+
+3. Вывод размера сделок с поступившими на них платежами
+<pre><code>
+SELECT 
+    d.id as deal_id, d.rest, p.amount, p.accrual_date 
+FROM 
+    _Payment p, _deal d, RELATE_TO_DEAL pfd
+WHERE 
+    MATCH(p-(pfd)->d);
+</code></pre>
+<img src="pictures//lab6_pics/3.jpg" alt="3" width="700">
+
+4. Все кредитные продукты и сделки по ним 
+<pre><code>
+SELECT 
+    cp.title AS product_name, 
+    cp.rate, 
+    ISNULL(d.amount, 0) AS deal_amount,
+    CASE 
+        WHEN d.id IS NULL THEN 'Сделок нет'
+        ELSE CONCAT('Заключено: ', CAST(d.amount AS VARCHAR(20)))
+    END AS deal_info
+FROM 
+    _Credit_product cp
+    LEFT JOIN (_Deal d, DEAL_USES_PRODUCT dup) 
+        ON MATCH(cp<-(dup)-d)
+ORDER BY 
+    cp.title;
+</code></pre>
+<img src="pictures//lab6_pics/4.jpg" alt="4" width="700">
+
+5. Клиенты с общей суммой кредитов более 1 млн
+<pre><code>
+SELECT 
+    c.contact_person, 
+    SUM(ch.amount) as total_credit
+FROM 
+    _Client c, _credit_history ch, HAS_HISTORY chh
+WHERE 
+    MATCH(c-(chh)->ch)
+GROUP BY 
+    c.id, c.contact_person
+HAVING 
+    SUM(ch.amount) > 1000000;
+</code></pre>
+<img src="pictures//lab6_pics/5.jpg" alt="5" width="700">
+
+6. Статистика использования кредитных продуктов
+<pre><code>
+SELECT 
+    cp.title, 
+    COUNT(d.id) as deal_count, 
+    SUM(ISNULL(d.amount, 0)) as total_deal_amount
+FROM 
+    _Credit_product cp
+    LEFT JOIN (_Deal d, DEAL_USES_PRODUCT dup) 
+        ON MATCH(cp<-(dup)-d)
+GROUP BY 
+    cp.title, cp.id;
+</code></pre>
+<img src="pictures//lab6_pics/6.jpg" alt="6" width="700">
+
+7. Клиенты, у которых есть неоплаченные штрафы 
+<pre><code>
+SELECT 
+    c.contact_person, 
+    c.company, 
+    c.address
+FROM 
+    _client c
+WHERE 
+    EXISTS (
+        SELECT 1 
+        FROM _Credit_history ch, HAS_HISTORY chh
+        WHERE MATCH(c-(chh)->ch)
+          AND ch.is_penal = 1
+    );
+</code></pre>
+<img src="pictures//lab6_pics/7.jpg" alt="7" width="700">
 </div>
+
