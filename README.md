@@ -502,9 +502,181 @@ SELECT * FROM Client
 <h3 align="center">
   <a href="#client"></a>
   Создание графовых таблиц и работа с ними.
-Задание 1.
-Используйте реляционную БД из лабораторной работы №2.
-Продумайте и создайте графовые таблицы по реляционной БД, заполните графовые таблицы используя данные в реляционных таблицах.
-Напишите запросы из задания 3.2 используя паттерн MATCH.
-Сравните полученные результаты  с  результатами запросов к реляционной модели. 
+<div>
+<li><b>Используйте реляционную БД из лабораторной работы №2.
+Продумайте и создайте графовые таблицы по реляционной БД</li>
+<img src="pictures/diag6.png" alt="3b" width="900">
+<li><b>Заполнение графовых таблиц используя данные из реляционных таблиц.</li>
+<pre><code>
+	DROP TABLE IF EXISTS HAS_HISTORY;
+DROP TABLE IF EXISTS CLIENT_USES_PRODUCT;
+DROP TABLE IF EXISTS CONCLUDES_DEAL;
+DROP TABLE IF EXISTS _history_has_penalty;
+DROP TABLE IF EXISTS IS_PART_OF_PAYMENT;
+DROP TABLE IF EXISTS RELATE_TO_DEAL;
+DROP TABLE IF EXISTS DEAL_USES_PRODUCT;
+DROP TABLE IF EXISTS _client;
+DROP TABLE IF EXISTS _credit_history;
+DROP TABLE IF EXISTS _credit_product;
+DROP TABLE IF EXISTS _deal;
+DROP TABLE IF EXISTS _penalty;
+DROP TABLE IF EXISTS _payment;
+GO
 
+CREATE TABLE _client (
+    id INT PRIMARY KEY,
+    phone_number VARCHAR(20),
+    contact_person NVARCHAR(100),
+    company NVARCHAR(200),
+    address NVARCHAR(250)
+) AS NODE;
+
+CREATE TABLE _credit_history (
+    id INT PRIMARY KEY,
+    bank VARCHAR(200),
+    number INT,
+    amount DECIMAL(20,2),
+    deal_start_date DATE,
+    repayment_date DATE,
+    is_penal TINYINT
+) AS NODE;
+
+CREATE TABLE _credit_product (
+    id INT PRIMARY KEY,
+    title VARCHAR(100),
+    rate DECIMAL(4,2),
+    in_parts TINYINT,
+    min_period INT,
+    max_period INT,
+    min_amount DECIMAL(20,2),
+    max_amount DECIMAL(20,2),
+    condition1 DECIMAL(20,2),
+    condition2 NVARCHAR(500)
+) AS NODE;
+
+CREATE TABLE _deal (
+    id INT PRIMARY KEY,
+    deal_start DATE,
+    amount DECIMAL(20,2),
+    period_ INT,
+    rate DECIMAL(4,2),
+    monthly_payment DECIMAL(20,2),
+    rest DECIMAL(20,2)
+) AS NODE;
+
+CREATE TABLE _penalty (
+    id INT PRIMARY KEY,
+    accrual_date DATE,
+    reason VARCHAR(200),
+    amount DECIMAL(20,2),
+    is_paid BIT
+) AS NODE;
+
+CREATE TABLE _payment (
+    id INT PRIMARY KEY,
+    amount DECIMAL(20,2),
+    accrual_date DATE,
+    actual_payment_date DATE,
+    in_main_debt DECIMAL(20,2),
+    in_early_repayment DECIMAL(20,2)
+) AS NODE;
+GO
+
+CREATE TABLE HAS_HISTORY AS EDGE;
+CREATE TABLE CLIENT_USES_PRODUCT AS EDGE;
+CREATE TABLE CONCLUDES_DEAL AS EDGE;
+CREATE TABLE IS_PART_OF_PAYMENT AS EDGE;
+CREATE TABLE RELATE_TO_DEAL AS EDGE;
+CREATE TABLE DEAL_USES_PRODUCT AS EDGE;
+GO
+
+INSERT INTO _client (id, phone_number, contact_person, company, address)
+SELECT id, phone_number, contact_person, company, address FROM Client;
+
+INSERT INTO _credit_history (id, bank, number, amount, deal_start_date, repayment_date, is_penal)
+SELECT id, bank, number, amount, deal_start_date, repayment_date, is_penal FROM [Credit history];
+
+INSERT INTO _credit_product (id, title, rate, in_parts, min_period, max_period, min_amount, max_amount, condition1, condition2)
+SELECT id, title, rate, in_parts, min_period, max_period, min_amount, max_amount, condition1, condition2 FROM [Credit product];
+
+INSERT INTO _deal (id, deal_start, amount, period_, rate, monthly_payment, rest)
+SELECT id, deal_start, amount, period_, rate, 
+       amount * (rate/100/12) * POWER(1 + (rate/100/12), period_) / (POWER(1 + (rate/100/12), period_) - 1),
+       amount
+FROM Deal;
+
+INSERT INTO _penalty (id, accrual_date, reason, amount, is_paid)
+SELECT id, accrual_date, reason, amount, is_paid FROM Penalty;
+
+INSERT INTO _payment (id, amount, accrual_date, actual_payment_date, in_main_debt, in_early_repayment)
+SELECT id, amount, accrual_date, actual_payment_date, in_main_debt, in_early_repayment FROM Payment;
+GO
+
+INSERT INTO HAS_HISTORY ($from_id, $to_id)
+SELECT 
+    c.$node_id,
+    ch.$node_id
+FROM _Client c
+ JOIN [Credit history] rch ON c.id = rch.client_id
+ JOIN _Credit_history ch ON ch.id = rch.id;
+GO
+
+INSERT INTO CLIENT_USES_PRODUCT ($from_id, $to_id)
+SELECT 
+    c.$node_id,
+    cp.$node_id
+FROM _Client c
+ JOIN Client_product rcp ON c.id = rcp.client_id
+ JOIN _Credit_product cp ON cp.id = rcp.product_id;
+GO
+
+INSERT INTO CONCLUDES_DEAL ($from_id, $to_id)
+SELECT 
+    c.$node_id,
+    d.$node_id
+FROM _Client c
+ JOIN Deal rd ON c.id = rd.client_id
+ JOIN _Deal d ON d.id = rd.id;
+GO
+
+INSERT INTO IS_PART_OF_PAYMENT ($from_id, $to_id)
+SELECT 
+    p.$node_id,
+    pay.$node_id
+FROM _Penalty p
+ JOIN Payment rpay ON p.id = rpay.penalty_id
+ JOIN _Payment pay ON pay.id = rpay.id;
+GO
+
+INSERT INTO RELATE_TO_DEAL ($from_id, $to_id)
+SELECT 
+    pay.$node_id,
+    d.$node_id
+FROM _Payment pay
+ JOIN Payment rpay ON pay.id = rpay.id
+ JOIN _Deal d ON d.id = rpay.deal_id;
+GO
+
+INSERT INTO DEAL_USES_PRODUCT ($from_id, $to_id)
+SELECT DISTINCT
+    d.$node_id,
+    cp.$node_id
+FROM _Deal d
+ JOIN Deal rd ON d.id = rd.id
+ JOIN _Credit_product cp ON cp.id = rd.product_id;
+GO
+</code></pre>
+<li><b>Напишите запросы из задания 3.2 используя паттерн MATCH.
+Сравните полученные результаты  с  результатами запросов к реляционной модели.
+1. Краткий вывод кредитной истории клиентов с именами кредиторов
+</b></li>
+<pre><code>
+SELECT 
+    c.contact_person, ch.bank, ch.amount 
+FROM 
+    _Client c, _Credit_history ch, HAS_HISTORY chh
+WHERE 
+    MATCH(c-(chh)->ch);
+</code></pre>
+<img src="pictures//lab6_pics/1.png" alt="3c" width="900">
+</div>
