@@ -847,6 +847,7 @@ SELECT * FROM Client WHERE id = 10;
 GO
 </code></pre>
 <img src="pictures//lab7_pics/2.2.1.s1.png" alt="2.2.1.s1" width="800">
+
 Сеанс 2:
 <pre><code>
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
