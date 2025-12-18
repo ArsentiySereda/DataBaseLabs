@@ -774,7 +774,7 @@ WHERE
 </code></pre>
 <img src="pictures//lab6_pics/7.jpg" alt="7" width="800">
 </div>
-
+<ol>
 # <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab7
 [Назад](#content)
 <h3 align="center">
@@ -1181,5 +1181,6 @@ COMMIT;
 </code></pre>
 <img src="pictures/7.2.72.png" alt="Схема 7.2.72" width="600">
       </ul>
+	</ol>
 </div>
 
