@@ -778,7 +778,6 @@ WHERE
 [Назад](#content)
 <h3 align="center">
   <a href="#client"></a> </h3>
-<ol>
   <h3>Задание 1</h3>
   <p>Используя базу, полученную в лабораторной 2, создать транзакцию, произвести ее откат и фиксацию. Показать, что данные существовали до отката, удалились после отката, снова были добавлены, и затем были успешно зафиксированы. При необходимости используйте точки сохранения и вложенные транзакции.</p>
 <pre><code>
@@ -820,64 +819,52 @@ SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
 GO
 </code></pre>
 <img src="pictures//lab7_pics/1.1.png" alt="1.1" width="800">
+
+<img src="pictures//lab7_pics/1.2.png" alt="1.2" width="800">
   <h3>Задание 2</h3>
   <p>Подготовить SQL-скрипты для выполнения проверок изолированности транзакций. Ваши скрипты должны работать с одной из таблиц, созданных в лабораторной работе №2.</p>
 
   <h4>Выполнение работы</h4>
   <ol>
-    <li>Запустить клиента и соединиться с базой данных. Открыть второе окно для ввода текста запросов (Ctrl+N в первом окне).</li>
-    <li>Установить в обоих сеансах уровень изоляции READ UNCOMMITTED. Выполнить сценарии проверки:
-      <ul>
-        <li>потерянных изменений,</li>
-        Первое окно:
+    1. Запустить клиента и соединиться с базой данных. Открыть второе окно для ввода текста запросов (Ctrl+N в первом окне).
+    2. Установить в обоих сеансах уровень изоляции READ UNCOMMITTED. Выполнить сценарии проверки:
+     потерянных изменений,
+Сеанс 1:
 <pre><code>
--- изоляция
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
 BEGIN TRANSACTION;
 
--- Чтение данных (для проверки текущего состояния)
-SELECT * FROM Клиент WHERE ID = 1;
+SELECT * FROM Client WHERE id = 10;
 
--- Изменение данных
-UPDATE Клиент 
-SET ФИО = 'Шипицын Денис Александрович (изменено сессией 1)' 
-WHERE ID = 1;
+UPDATE Client SET company = 'ООО "СбытЭнерго"' 
+WHERE company = 'ООО "ЭнергоСбыт"';
 
--- Пауза для выполнения сессии 2
 WAITFOR DELAY '00:00:10';
 
--- Завершение транзакции
-COMMIT;
+COMMIT TRANSACTION;
 
--- Проверка результата
-SELECT * FROM Клиент WHERE ID = 1;
+SELECT * FROM Client WHERE id = 10;
+GO
 </code></pre>
-<img src="pictures/7.2.11.png" alt="Схема 7.2.11" width="600"> <br>
-Второе окно:
+<img src="pictures//lab7_pics/2.2.1.s1.png" alt="2.2.1.s1" width="800">
+Сеанс 2:
 <pre><code>
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
-
--- Пауза для начала выполнения сессии 1
-WAITFOR DELAY '00:00:05';
-
 BEGIN TRANSACTION;
 
--- Чтение данных (должно увидеть изменения сессии 1, даже если они не закоммичены)
-SELECT * FROM Клиент WHERE ID = 1;
+SELECT * FROM Client WHERE id = 10;
 
--- Попытка изменения тех же данных
-UPDATE Клиент 
-SET Паспортные_данные = '9999999999' 
-WHERE ID = 1;
+UPDATE Client SET company = 'ООО "СбытЭнерго"' 
+WHERE company = 'ООО "ЭнергоСбыт"';
 
--- Завершение транзакции
-COMMIT;
+WAITFOR DELAY '00:00:10';
 
--- Проверка результата
-SELECT * FROM Клиент WHERE ID = 1;
+COMMIT TRANSACTION;
+
+SELECT * FROM Client WHERE id = 10;
+GO
 </code></pre>
-<img src="pictures/7.2.12.png" alt="Схема 7.2.12" width="600">
+<img src="pictures//2.2.1.s2.png" alt="2.2.1.s2" width="800">
         <li>грязного чтения.</li>
         Первое окно:
 <pre><code>
@@ -1180,6 +1167,5 @@ COMMIT;
 </code></pre>
 <img src="pictures/7.2.72.png" alt="Схема 7.2.72" width="600">
       </ul>
-	</ol>
 </div>
 
