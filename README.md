@@ -773,11 +773,413 @@ WHERE
     );
 </code></pre>
 <img src="pictures//lab6_pics/7.jpg" alt="7" width="800">
+</div>
 
 # <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab7
 [Назад](#content)
 <h3 align="center">
-  <a href="#client"></a>
+  <a href="#client"></a> 
+<div>
+  <h3>Задание 1</h3>
+  <p>Используя базу, полученную в лабораторной 2, создать транзакцию, произвести ее откат и фиксацию. Показать, что данные существовали до отката, удалились после отката, снова были добавлены, и затем были успешно зафиксированы. При необходимости используйте точки сохранения и вложенные транзакции.</p>
+<pre><code>
+BEGIN TRANSACTION;
 
+SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
+
+INSERT INTO Client (phone_number, contact_person, company, address)
+VALUES ('+79160001111', 'Смирнова Анна', 'ООО "СтройГрад"', 'Москва, Строителей 15');
+
+SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
+
+ROLLBACK TRANSACTION;
+
+SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
+GO
+
+BEGIN TRANSACTION;
+
+INSERT INTO Client (phone_number, contact_person, company, address)
+VALUES ('+79262223344', 'Ковалев Георгий', 'ЗАО "ТехноПрофи"', 'Санкт-Петербург, Техническая 25');
+
+SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
+
+SAVE TRANSACTION Savepoint1;
+
+INSERT INTO Client (phone_number, contact_person, company, address)
+VALUES ('+79035556677', 'Петрова Анна', 'ИП Петрова', 'Екатеринбург, Торговая 30');
+
+SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
+
+ROLLBACK TRANSACTION Savepoint1;
+
+SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
+
+COMMIT TRANSACTION;
+
+SELECT * FROM Client WHERE id > 8 ORDER BY id ASC;
+GO
+</code></pre>
+<img src="pictures//lab7_pics/1.1.png" alt="1.1" width="800">
+  <h3>Задание 2</h3>
+  <p>Подготовить SQL-скрипты для выполнения проверок изолированности транзакций. Ваши скрипты должны работать с одной из таблиц, созданных в лабораторной работе №2.</p>
+
+  <h4>Выполнение работы</h4>
+  <ol>
+    <li>Запустить клиента и соединиться с базой данных. Открыть второе окно для ввода текста запросов (Ctrl+N в первом окне).</li>
+    <li>Установить в обоих сеансах уровень изоляции READ UNCOMMITTED. Выполнить сценарии проверки:
+      <ul>
+        <li>потерянных изменений,</li>
+        Первое окно:
+<pre><code>
+-- изоляция
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+BEGIN TRANSACTION;
+
+-- Чтение данных (для проверки текущего состояния)
+SELECT * FROM Клиент WHERE ID = 1;
+
+-- Изменение данных
+UPDATE Клиент 
+SET ФИО = 'Шипицын Денис Александрович (изменено сессией 1)' 
+WHERE ID = 1;
+
+-- Пауза для выполнения сессии 2
+WAITFOR DELAY '00:00:10';
+
+-- Завершение транзакции
+COMMIT;
+
+-- Проверка результата
+SELECT * FROM Клиент WHERE ID = 1;
+</code></pre>
+<img src="pictures/7.2.11.png" alt="Схема 7.2.11" width="600"> <br>
+Второе окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+-- Пауза для начала выполнения сессии 1
+WAITFOR DELAY '00:00:05';
+
+BEGIN TRANSACTION;
+
+-- Чтение данных (должно увидеть изменения сессии 1, даже если они не закоммичены)
+SELECT * FROM Клиент WHERE ID = 1;
+
+-- Попытка изменения тех же данных
+UPDATE Клиент 
+SET Паспортные_данные = '9999999999' 
+WHERE ID = 1;
+
+-- Завершение транзакции
+COMMIT;
+
+-- Проверка результата
+SELECT * FROM Клиент WHERE ID = 1;
+</code></pre>
+<img src="pictures/7.2.12.png" alt="Схема 7.2.12" width="600">
+        <li>грязного чтения.</li>
+        Первое окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+BEGIN TRANSACTION;
+
+-- Изменение данных без коммита
+UPDATE Клиент 
+SET ФИО = 'Немтинов Никита Сергеевич (грязное чтение)' 
+WHERE ID = 2;
+
+-- Пауза для выполнения сессии 2 (чтения незакоммиченных данных)
+WAITFOR DELAY '00:00:10';
+
+-- Откат изменений
+ROLLBACK;
+
+-- Проверка, что данные вернулись к исходным
+SELECT * FROM Клиент WHERE ID = 2;
+</code></pre>
+<img src="pictures/7.2.21.png" alt="Схема 7.2.21" width="600"> <br>
+Второе окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+-- Пауза для начала выполнения сессии 1
+WAITFOR DELAY '00:00:05';
+
+BEGIN TRANSACTION;
+
+-- Чтение незакоммиченных данных (грязное чтение)
+SELECT * FROM Клиент WHERE ID = 2;
+
+-- Дополнительная проверка
+SELECT 'Прочитано грязное значение: ' + ФИО 
+FROM Клиент 
+WHERE ID = 2;
+
+-- Пауза для отката в сессии 1
+WAITFOR DELAY '00:00:10';
+
+-- Проверка данных после отката
+SELECT * FROM Клиент WHERE ID = 2;
+
+-- Завершение транзакции
+COMMIT;
+</code></pre>
+<img src="pictures/7.2.22.png" alt="Схема 7.2.22" width="600">
+      </ul>
+    </li>
+    <li>Записать протокол выполнения сценариев.</li>
+    <li>Установить в обоих сеансах уровень изоляции READ COMMITTED. Выполнить сценарии проверки:
+      <ul>
+        <li>грязного чтения,</li>
+        Первое окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+GO
+
+BEGIN TRANSACTION;
+
+-- Изменение данных без коммита
+UPDATE Клиент 
+SET ФИО = 'Немтинов Никита Сергеевич (READ COMMITTED тест)' 
+WHERE ID = 2;
+
+-- Проверка своих изменений
+SELECT 'Сессия 1: Мои изменения (в транзакции) - ' + ФИО
+FROM Клиент 
+WHERE ID = 2;
+
+-- Пауза для выполнения окна 2
+PRINT 'Окно 1: Ожидание 15 секунд...';
+WAITFOR DELAY '00:00:15';
+
+-- Откат изменений
+ROLLBACK;
+
+-- Проверка после отката
+SELECT 'Окно 1: После отката - ' + ФИО
+FROM Клиент 
+WHERE ID = 2;
+</code></pre>
+<img src="pictures/7.2.31.png" alt="Схема 7.2.31" width="600"> <br>
+Второе окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+GO
+
+-- Пауза для начала выполнения окна 1
+WAITFOR DELAY '00:00:05';
+
+BEGIN TRANSACTION;
+
+-- Попытка чтения данных
+SELECT 'Сессия 2: Попытка чтения (READ COMMITTED) - ' + ISNULL(ФИО, 'NULL')
+FROM Клиент 
+WHERE ID = 2;
+
+WAITFOR DELAY '00:00:15';
+
+-- Проверка данных после завершения окна 1
+SELECT 'Окно 2: После завершения сессии 1 - ' + ФИО
+FROM Клиент 
+WHERE ID = 2;
+
+COMMIT;
+</code></pre>  
+<img src="pictures/7.2.32.png" alt="Схема 7.2.32" width="600">
+        <li>неповторяющегося чтения.</li>
+        Первое окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+GO
+
+BEGIN TRANSACTION;
+
+-- Первое чтение данных
+SELECT 'Окно 1: Первое чтение - ' + ФИО + ', Паспорт: ' + Паспортные_данные
+FROM Клиент 
+WHERE ID = 3;
+
+-- Пауза между чтениями
+WAITFOR DELAY '00:00:20';
+
+-- Второе чтение тех же данных
+SELECT 'Окно 1: Второе чтение - ' + ФИО + ', Паспорт: ' + Паспортные_данные
+FROM Клиент 
+WHERE ID = 3;
+
+COMMIT;
+</code></pre> 
+<img src="pictures/7.2.41.png" alt="Схема 7.2.41" width="600"> <br>
+Второе окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+GO
+
+-- Пауза для начала выполнения окна 1
+WAITFOR DELAY '00:00:10';
+
+BEGIN TRANSACTION;
+
+-- Изменение данных между чтениями окна 1
+UPDATE Клиент 
+SET ФИО = 'Сидорова Анна Павловна (изменено окном 2)',
+    Паспортные_данные = '9998887777'
+WHERE ID = 3;
+
+
+-- Проверка своих изменений
+SELECT 'Окно 2: После изменения - ' + ФИО + ', Паспорт: ' + Паспортные_данные
+FROM Клиент 
+WHERE ID = 3;
+
+COMMIT;
+
+</code></pre> 
+<img src="pictures/7.2.42.png" alt="Схема 7.2.42" width="600">
+      </ul>
+    </li>
+    <li>Записать протокол выполнения сценариев.</li>
+    <li>Установить в обоих сеансах уровень изоляции REPEATABLE READ. Выполнить сценарии проверки:
+      <ul>
+        <li>неповторяющегося чтения,</li>
+        Первое окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+GO
+
+BEGIN TRANSACTION;
+
+-- Первое чтение данных
+SELECT 'Окно 1: Первое чтение - ' + ФИО + ', Паспорт: ' + Паспортные_данные
+FROM Клиент 
+WHERE ID = 3;
+
+WAITFOR DELAY '00:00:20';
+
+-- Второе чтение тех же данных
+SELECT 'Окно 1: Второе чтение - ' + ФИО + ', Паспорт: ' + Паспортные_данные
+FROM Клиент 
+WHERE ID = 3;
+
+COMMIT;
+</code></pre>
+<img src="pictures/7.2.51.png" alt="Схема 7.2.51" width="600"> <br>
+Второе окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+GO
+
+-- Пауза для начала выполнения окна 1
+WAITFOR DELAY '00:00:10';
+
+BEGIN TRANSACTION;
+
+-- Попытка изменения данных, которые читает окно 1
+UPDATE Клиент 
+SET ФИО = 'Сидорова Анна Павловна (изменено сессией 2)',
+    Паспортные_данные = '9998887777'
+WHERE ID = 3;
+
+
+-- Проверка своих изменений
+SELECT 'Окно 2: После изменения - ' + ФИО + ', Паспорт: ' + Паспортные_данные
+FROM Клиент 
+WHERE ID = 3;
+
+COMMIT;
+</code></pre>
+<img src="pictures/7.2.52.png" alt="Схема 7.2.52" width="600">
+        <li>фантома.</li>
+        Первое окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+GO
+
+BEGIN TRANSACTION;
+
+-- Первое чтение диапазона
+SELECT 'Окно 1: Клиенты с ID от 10 до 20:'
+SELECT ID, ФИО, Пол, Паспортные_данные
+FROM Клиент 
+WHERE ID BETWEEN 10 AND 20
+ORDER BY ID;
+
+WAITFOR DELAY '00:00:15';
+
+-- Второе чтение того же диапазона
+SELECT 'Окно 1: Повторное чтение клиентов с ID от 10 до 20:'
+SELECT ID, ФИО, Пол, Паспортные_данные
+FROM Клиент 
+WHERE ID BETWEEN 10 AND 20
+ORDER BY ID;
+
+COMMIT;
+</code></pre>
+<img src="pictures/7.2.61.png" alt="Схема 7.2.61" width="600"> <br>
+Второе окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+GO
+
+WAITFOR DELAY '00:00:08';
+
+BEGIN TRANSACTION;
+
+-- Вставка новой записи в диапазон
+INSERT INTO Клиент (ФИО, Паспортные_данные, Пол)
+VALUES ('Фантомный Клиент', '7776665554', 'Ж');
+
+
+-- Проверка вставки
+SELECT 'Окно 2: Проверка вставки - ID: ' + CAST(ID AS VARCHAR) + ', ФИО: ' + ФИО
+FROM Клиент 
+WHERE Паспортные_данные = '7776665554';
+
+COMMIT;
+
+</code></pre>
+<img src="pictures/7.2.62.png" alt="Схема 7.2.62" width="600">
+      </ul>
+    </li>
+    <li>Записать протокол выполнения сценариев.</li>
+    <li>Установить в обоих сеансах уровень изоляции SERIALIZABLE. Выполнить сценарий проверки:
+      <ul>
+        <li>фантома.</li>
+        Первое окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+BEGIN TRANSACTION;
+
+-- Чтение диапазона
+SELECT 'Окно 1: Первое чтение'
+SELECT ID, ФИО FROM Клиент WHERE ID BETWEEN 10 AND 15;
+
+WAITFOR DELAY '00:00:10';
+
+-- Повторное чтение
+SELECT 'Окно 1: Второе чтение'  
+SELECT ID, ФИО FROM Клиент WHERE ID BETWEEN 10 AND 15;
+
+COMMIT;
+</code></pre>
+<img src="pictures/7.2.71.png" alt="Схема 7.2.71" width="600"> <br>
+Второе окно:
+<pre><code>
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+WAITFOR DELAY '00:00:05';
+
+BEGIN TRANSACTION;
+
+INSERT INTO Клиент (ФИО, Паспортные_данные, Пол)
+VALUES ('Тест Фантом', '1234567890', 'М');
+
+COMMIT;
+</code></pre>
+<img src="pictures/7.2.72.png" alt="Схема 7.2.72" width="600">
+      </ul>
 </div>
 
