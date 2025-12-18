@@ -6,7 +6,8 @@
   <a href="#-lab2"><img alt="lab2" src="https://img.shields.io/badge/Lab2-red"></a> 
   <a href="#-lab3"><img alt="lab3" src="https://img.shields.io/badge/Lab3-yellow"></a> 
   <a href="#-lab4"><img alt="lab4" src="https://img.shields.io/badge/Lab4-purple"></a> 
-  <a href="#-lab6"><img alt="lab6" src="https://img.shields.io/badge/Lab6-green"></a> 
+  <a href="#-lab6"><img alt="lab6" src="https://img.shields.io/badge/Lab6-green"></a>
+  <a href="#-lab7"><img alt="lab7" src="https://img.shields.io/badge/Lab7-orange"></a>
 </p>
 <h3 align="center">
   <a href="#client"></a>
@@ -772,5 +773,11 @@ WHERE
     );
 </code></pre>
 <img src="pictures//lab6_pics/7.jpg" alt="7" width="800">
+
+# <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab7
+[Назад](#content)
+<h3 align="center">
+  <a href="#client"></a>
+
 </div>
 
