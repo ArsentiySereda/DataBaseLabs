@@ -499,13 +499,13 @@ SELECT * FROM Client
 	</ol>
 </div>
 
-<div>
 # <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab5
 [Назад](#content)
 <h3 align="center">
   <a href="#client"></a>
 	</h3>		
-	Создание ролей и присвоение им прав на объекты БД
+<div>
+Создание ролей и присвоение им прав на объекты БД
 
 Задание 1.
 Для БД, созданной в Лаб.раб. 1-2, создать 2 роли. 
@@ -701,12 +701,15 @@ GRANT EXECUTE ON GetCreditHistory TO Role_admin;
 
 
 </pre></code>
+</div>
 
 # <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab6
 [Назад](#content)
 <h3 align="center">
   <a href="#client"></a>
 	</h3>
+
+<div>
   Создание графовых таблиц и работа с ними.
 <li><b>Используйте реляционную БД из лабораторной работы №2.
 Продумайте и создайте графовые таблицы по реляционной БД</li>
