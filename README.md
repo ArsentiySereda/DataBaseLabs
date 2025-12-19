@@ -527,7 +527,6 @@ SELECT * FROM Client
 <code><pre>
 USE master
 GO
-
 ALTER LOGIN AdminLogin ENABLE;
 ALTER LOGIN UserLogin ENABLE;
 
