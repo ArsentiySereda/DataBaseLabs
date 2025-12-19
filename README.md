@@ -1099,6 +1099,6 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 
 Полный код лабораторной работы:
 ![Сеанс 1](/transakziiLabScreen1.sql)
-![Сеанс 1](/transakziiLabScreen2.sql)
+![Сеанс 2](/transakziiLabScreen2.sql)
 </div>
 
