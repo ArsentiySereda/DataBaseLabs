@@ -825,7 +825,6 @@ GO
   <p>Подготовить SQL-скрипты для выполнения проверок изолированности транзакций. Ваши скрипты должны работать с одной из таблиц, созданных в лабораторной работе №2.</p>
 
   <h4>Выполнение работы</h4>
-  <ol>
     1. Запустить клиента и соединиться с базой данных. Открыть второе окно для ввода текста запросов (Ctrl+N в первом окне).
     
 	2. Установить в обоих сеансах уровень изоляции READ UNCOMMITTED. Выполнить сценарии проверки:
@@ -867,6 +866,7 @@ SELECT * FROM Client WHERE id = 10;
 GO
 </code></pre>
 <img src="pictures//lab7_pics/2.2.1.s2.png" alt="2.2.1.s2" width="800">
+
 	-грязного чтения,
 Сеанс 1:
 <code><pre>
@@ -885,6 +885,7 @@ COMMIT;
 SELECT * FROM Client WHERE id = 6;
 </pre></code>
 <img src="pictures//lab7_pics/2.2.2.s1.png" alt="2.2.2.s1" width="800">
+
 Сеанс 2:
 <code><pre>
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
@@ -902,5 +903,51 @@ ROLLBACK;
 SELECT * FROM Client WHERE id = 6;
 </pre></code>
 <img src="pictures//lab7_pics/2.2.2.s2.png" alt="2.2.2.s2" width="800">
+
+	3. Записать протокол выполнения сценариев. 
+	
+	4.Установить в обоих сеансах уровень изоляции READ COMMITTED. Выполнить сценарии проверки: 
+грязного чтения. 
+
+Сеанс 1:
+
+<code><pre>
+
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+WAITFOR DELAY '00:00:05';
+
+BEGIN TRANSACTION;
+
+SELECT * FROM Client WHERE id = 7;
+
+WAITFOR DELAY '00:00:10';
+
+COMMIT;
+
+SELECT * FROM Client WHERE id = 7;
+</pre></code>
+<img src="pictures//lab7_pics/2.4.1.s1.png" alt="2.4.1.s1" width="800">
+
+Сеанс 2:
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+BEGIN TRANSACTION;
+
+SELECT * FROM Client WHERE id = 7;
+
+UPDATE Client 
+SET company = 'ООО "Новое название"', 
+    contact_person = 'Новое имя'
+WHERE id = 7;
+
+WAITFOR DELAY '00:00:10';
+
+ROLLBACK;
+
+SELECT * FROM Client WHERE id = 7;
+</pre></code>
+<img src="pictures//lab7_pics/2.4.1.s2.png" alt="2.4.1.s2" width="800">
 </div>
 
