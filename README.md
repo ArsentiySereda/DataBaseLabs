@@ -6,6 +6,7 @@
   <a href="#-lab2"><img alt="lab2" src="https://img.shields.io/badge/Lab2-red"></a> 
   <a href="#-lab3"><img alt="lab3" src="https://img.shields.io/badge/Lab3-yellow"></a> 
   <a href="#-lab4"><img alt="lab4" src="https://img.shields.io/badge/Lab4-purple"></a> 
+  <a href="#-lab5"><img alt="lab5" src="https://img.shields.io/badge/Lab5-pink"></a>
   <a href="#-lab6"><img alt="lab6" src="https://img.shields.io/badge/Lab6-green"></a>
   <a href="#-lab7"><img alt="lab7" src="https://img.shields.io/badge/Lab7-orange"></a>
 </p>
@@ -497,7 +498,205 @@ SELECT * FROM Client
 <img src="pictures//lab4_pics/3a1.png" alt="3a1" width="700">
 	</ol>
 </div>
-		
+
+# <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab5
+[Назад](#content)
+<h3 align="center">
+  <a href="#client"></a>
+	</h3>		
+	Создание ролей и присвоение им прав на объекты БД
+
+Задание 1.
+Для БД, созданной в Лаб.раб. 1-2, создать 2 роли. 
+1-я роль должна иметь доступ к таблицам, хр. процедурам и др. объектам БД, требующийся для руководителя фирмы (зав. библиотекой, столовой, дет.садом, поликлиникой, ...) (т.е., ему д.б. разрешено просматривать конфиденциальную информацию, удалять, исправлять какие-то сведения, выполнять процедуры и функции). Некоторые права необходимо предоставить с возможностью дальнейшей передачи.
+2-я роль должна иметь доступ, требующийся для простого сотрудника (просмотр не всей инф-ии, добавление, изменение, удаление – только того, что нужно для работы, выполнение ограниченного набора процедур и функции).
+Включить 2-х пользователей, предварительно созданных для каждого студента администратором БД (User_<ваш логин>, User1_<ваш логин>, Пароль - 1234567),  в эти роли и проверить, что права ролей выполняются для каждого пользователя (для этого под каждым пользователем подключиться к БД).
+Необходимо уметь предоставлять права на объекты любого типа, отзывать выданные права, давать полный запрет на выполнение некоторых действий. (через команды T-SQL и интерфейс SQL Server Management Studio (SSMS) )
+Задание 2.
+Выполнить маскирование некоторых поле Ваших таблиц  2-мя различными методами. 
+1. ALTER COLUMN LastName ADD MASKED WITH (FUNCTION = 'partial(2,"xxxx",0)')
+2. Используя механизмы представлений, хранимых процедур и функций.
+Члены 1 роли должны видеть оригинальные данные, члены 2 роли маскированные.
+В качестве отчета по этой ЛР предоставить скрипт, выполняющий эти действия.
+Работа сдается очно.
+<code><pre>
+USE master
+GO
+
+ALTER LOGIN AdminLogin ENABLE;
+ALTER LOGIN UserLogin ENABLE;
+
+-- УДАЛЕНИЕ СУЩЕСТВУЮЩИХ ОБЪЕКТОВ (правильный синтаксис)
+DROP VIEW Client_Masked;
+DROP VIEW CreditHistory_Masked;
+DROP PROCEDURE AddClient;
+DROP PROCEDURE GetClients;
+DROP PROCEDURE GetCreditHistory;
+
+-- УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ И РОЛЕЙ
+IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'admin_sereda')
+    DROP USER admin_sereda;
+IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'user_sereda')
+    DROP USER user_sereda;
+IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Role_admin')
+    DROP ROLE Role_admin;
+IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Role_user')
+    DROP ROLE Role_user;
+
+-- УДАЛЕНИЕ ЛОГИНОВ
+IF EXISTS (SELECT * FROM sys.server_principals WHERE name = 'AdminLogin')
+    DROP LOGIN AdminLogin;
+IF EXISTS (SELECT * FROM sys.server_principals WHERE name = 'UserLogin')
+    DROP LOGIN UserLogin;
+
+-- СОЗДАНИЕ РОЛЕЙ И ПОЛЬЗОВАТЕЛЕЙ
+CREATE ROLE Role_admin;
+CREATE ROLE Role_user;
+CREATE LOGIN AdminLogin WITH PASSWORD = 'Admin1234';
+CREATE LOGIN UserLogin WITH PASSWORD = 'User1234';
+CREATE USER admin_sereda FOR LOGIN AdminLogin;
+CREATE USER user_sereda FOR LOGIN UserLogin;
+
+ALTER ROLE Role_admin ADD MEMBER admin_sereda;
+ALTER ROLE Role_user ADD MEMBER user_sereda;
+
+-- ПРАВА ДЛЯ АДМИНА
+GRANT SELECT, INSERT, UPDATE, DELETE ON Client TO Role_admin WITH GRANT OPTION;
+GRANT SELECT, INSERT, UPDATE, DELETE ON [Credit history] TO Role_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON [Credit product] TO Role_admin WITH GRANT OPTION;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Client_product TO Role_admin WITH GRANT OPTION;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Deal TO Role_admin WITH GRANT OPTION;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Penalty TO Role_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON Payment TO Role_admin;
+GRANT EXECUTE TO Role_admin WITH GRANT OPTION;
+
+-- ПРАВА ДЛЯ ПОЛЬЗОВАТЕЛЯ
+GRANT SELECT, INSERT ON Client TO Role_user;
+GRANT SELECT ON [Credit product] TO Role_user;
+GRANT SELECT, INSERT ON Deal TO Role_user;
+GRANT SELECT ON Payment TO Role_user;
+GRANT SELECT ON Penalty TO Role_user;
+GRANT SELECT ON [Credit history] TO Role_user;
+
+DENY UPDATE, DELETE ON Client TO Role_user;
+DENY UPDATE, DELETE ON [Credit product] TO Role_user;
+DENY DELETE ON Deal TO Role_user;
+GRANT EXECUTE TO Role_user WITH GRANT OPTION;
+
+-- МАСКИРОВАНИЕ ДАННЫХ
+ALTER TABLE Client ALTER COLUMN company DROP MASKED;
+ALTER TABLE [Credit history] ALTER COLUMN bank DROP MASKED;
+ALTER TABLE [Credit history] ALTER COLUMN number DROP MASKED;
+ALTER TABLE [Credit history] ALTER COLUMN amount DROP MASKED;
+ALTER TABLE [Credit history] ALTER COLUMN deal_start_date DROP MASKED;
+ALTER TABLE [Credit history] ALTER COLUMN repayment_date DROP MASKED;
+
+ALTER TABLE Client ALTER COLUMN address ADD MASKED WITH (FUNCTION = 'partial(0,"*********",0)');
+ALTER TABLE Client ALTER COLUMN company ADD MASKED WITH (FUNCTION = 'partial(0,"********",0)');
+ALTER TABLE [Credit history] ALTER COLUMN bank ADD MASKED WITH (FUNCTION = 'partial(0,"******",0)');
+ALTER TABLE [Credit history] ALTER COLUMN number ADD MASKED WITH (FUNCTION = 'default()');
+ALTER TABLE [Credit history] ALTER COLUMN amount ADD MASKED WITH (FUNCTION = 'default()');
+ALTER TABLE [Credit history] ALTER COLUMN deal_start_date ADD MASKED WITH (FUNCTION = 'default()');
+ALTER TABLE [Credit history] ALTER COLUMN repayment_date ADD MASKED WITH (FUNCTION = 'default()');
+
+GRANT UNMASK TO Role_admin;
+DENY UNMASK TO Role_user;
+GO
+
+
+CREATE VIEW Client_Masked AS
+SELECT 
+    id,
+    phone_number,
+    contact_person,
+    CASE 
+        WHEN IS_MEMBER('Role_admin') = 1 THEN company
+        ELSE '********'
+    END AS company,
+    CASE 
+        WHEN IS_MEMBER('Role_admin') = 1 THEN address
+        ELSE '*********'
+    END AS address
+FROM Client;
+GO
+
+CREATE VIEW CreditHistory_Masked AS
+SELECT 
+    id,
+    client_id,
+    CASE 
+        WHEN IS_MEMBER('Role_admin') = 1 THEN bank
+        ELSE '******'
+    END AS bank,
+    CASE 
+        WHEN IS_MEMBER('Role_admin') = 1 THEN number
+        ELSE '***'
+    END AS number,
+    CASE 
+        WHEN IS_MEMBER('Role_admin') = 1 THEN amount
+        ELSE '******'
+    END AS amount,
+    CASE 
+        WHEN IS_MEMBER('Role_admin') = 1 THEN deal_start_date
+        ELSE '********'
+    END AS deal_start_date,
+    CASE 
+        WHEN IS_MEMBER('Role_admin') = 1 THEN repayment_date
+        ELSE '********'
+    END AS repayment_date,
+    is_penal
+FROM [Credit history];
+
+GO
+
+GRANT SELECT ON Client_Masked TO Role_user;
+GRANT SELECT ON CreditHistory_Masked TO Role_user;
+GRANT SELECT ON Client_Masked TO Role_admin;
+GRANT SELECT ON CreditHistory_Masked TO Role_admin;
+GO
+-- ПРОЦЕДУРЫ
+CREATE PROCEDURE AddClient
+    @phone_number VARCHAR(20),
+    @contact_person NVARCHAR(100),
+    @company NVARCHAR(200),
+    @address NVARCHAR(250)
+AS
+BEGIN
+    INSERT INTO Client (phone_number, contact_person, company, address)
+    VALUES (@phone_number, @contact_person, @company, @address);
+END;
+GO
+
+CREATE PROCEDURE GetClients
+AS
+BEGIN
+    IF IS_MEMBER('Role_admin') = 1
+        SELECT * FROM Client;
+    ELSE
+        SELECT * FROM Client_Masked;
+END;
+GO
+
+CREATE PROCEDURE GetCreditHistory
+AS
+BEGIN
+    IF IS_MEMBER('Role_admin') = 1
+        SELECT * FROM [Credit history];
+    ELSE
+        SELECT * FROM CreditHistory_Masked;
+END;
+
+-- ПРАВА НА ПРОЦЕДУРЫ
+GRANT EXECUTE ON AddClient TO Role_user;
+GRANT EXECUTE ON GetClients TO Role_user;
+GRANT EXECUTE ON GetCreditHistory TO Role_user;
+GRANT EXECUTE ON AddClient TO Role_admin;
+GRANT EXECUTE ON GetClients TO Role_admin;
+GRANT EXECUTE ON GetCreditHistory TO Role_admin;
+
+
+</pre></code>
+
 # <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab6
 [Назад](#content)
 <h3 align="center">
