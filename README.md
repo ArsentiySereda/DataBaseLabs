@@ -867,7 +867,7 @@ GO
 </code></pre>
 <img src="pictures//lab7_pics/2.2.1.s2.png" alt="2.2.1.s2" width="800">
 
-	-грязного чтения,
+-грязного чтения,
 Сеанс 1:
 <code><pre>
 
@@ -904,11 +904,10 @@ SELECT * FROM Client WHERE id = 6;
 </pre></code>
 <img src="pictures//lab7_pics/2.2.2.s2.png" alt="2.2.2.s2" width="800">
 
-	3. Записать протокол выполнения сценариев. 
+3. Записать протокол выполнения сценариев. 
 	
-	4.Установить в обоих сеансах уровень изоляции READ COMMITTED. Выполнить сценарии проверки: 
+4.Установить в обоих сеансах уровень изоляции READ COMMITTED. Выполнить сценарии проверки: 
 грязного чтения. 
-
 Сеанс 1:
 
 <code><pre>
@@ -949,5 +948,41 @@ ROLLBACK;
 SELECT * FROM Client WHERE id = 7;
 </pre></code>
 <img src="pictures//lab7_pics/2.4.1.s2.png" alt="2.4.1.s2" width="800">
+
+-неповторяющееся чтение 
+Сеанс 1:
+
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+BEGIN TRANSACTION;
+
+SELECT rate, title, max_amount FROM [Credit product] WHERE id = 3;
+
+WAITFOR DELAY '00:00:07';
+
+SELECT rate, title, max_amount FROM [Credit product] WHERE id = 3;
+
+COMMIT TRANSACTION;
+</pre></code>
+<img src="pictures//lab7_pics/2.4.2.s1.png" alt="2.4.2.s1" width="800">
+
+Сеанс 2:
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+BEGIN TRANSACTION;
+
+UPDATE [Credit product] 
+SET rate = 8,  
+    max_amount = 25000000.00, 
+    title = 'Лизинг оборудования оптом'
+WHERE id = 3;
+
+COMMIT TRANSACTION;
+
+SELECT rate, title, max_amount FROM [Credit product] WHERE id = 3;
+</pre></code>
+<img src="pictures//lab7_pics/2.4.2.s2.png" alt="2.4.2.s2" width="800">
 </div>
 
