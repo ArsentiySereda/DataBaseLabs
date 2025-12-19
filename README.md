@@ -825,10 +825,10 @@ GO
   <p>Подготовить SQL-скрипты для выполнения проверок изолированности транзакций. Ваши скрипты должны работать с одной из таблиц, созданных в лабораторной работе №2.</p>
 
   <h4>Выполнение работы</h4>
-    1. Запустить клиента и соединиться с базой данных. Открыть второе окно для ввода текста запросов (Ctrl+N в первом окне).
+1. Запустить клиента и соединиться с базой данных. Открыть второе окно для ввода текста запросов (Ctrl+N в первом окне).
     
-	2. Установить в обоих сеансах уровень изоляции READ UNCOMMITTED. Выполнить сценарии проверки:
-     - потерянных изменений,
+2. Установить в обоих сеансах уровень изоляции READ UNCOMMITTED. Выполнить сценарии проверки:
+- потерянных изменений,
 Сеанс 1:
 <pre><code>
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
@@ -863,14 +863,12 @@ WAITFOR DELAY '00:00:10';
 COMMIT TRANSACTION;
 
 SELECT * FROM Client WHERE id = 10;
-GO
 </code></pre>
 <img src="pictures//lab7_pics/2.2.1.s2.png" alt="2.2.1.s2" width="800">
 
 -грязного чтения,
 Сеанс 1:
 <code><pre>
-
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
 WAITFOR DELAY '00:00:05';
@@ -907,11 +905,11 @@ SELECT * FROM Client WHERE id = 6;
 3. Записать протокол выполнения сценариев. 
 	
 4.Установить в обоих сеансах уровень изоляции READ COMMITTED. Выполнить сценарии проверки: 
-грязного чтения. 
+- грязного чтения
+
 Сеанс 1:
 
 <code><pre>
-
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 WAITFOR DELAY '00:00:05';
@@ -929,6 +927,7 @@ SELECT * FROM Client WHERE id = 7;
 <img src="pictures//lab7_pics/2.4.1.s1.png" alt="2.4.1.s1" width="800">
 
 Сеанс 2:
+
 <code><pre>
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
@@ -949,7 +948,8 @@ SELECT * FROM Client WHERE id = 7;
 </pre></code>
 <img src="pictures//lab7_pics/2.4.1.s2.png" alt="2.4.1.s2" width="800">
 
--неповторяющееся чтение 
+-неповторяющееся чтение
+
 Сеанс 1:
 
 <code><pre>
@@ -968,15 +968,14 @@ COMMIT TRANSACTION;
 <img src="pictures//lab7_pics/2.4.2.s1.png" alt="2.4.2.s1" width="800">
 
 Сеанс 2:
+
 <code><pre>
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 BEGIN TRANSACTION;
 
 UPDATE [Credit product] 
-SET rate = 8,  
-    max_amount = 25000000.00, 
-    title = 'Лизинг оборудования оптом'
+SET rate = 8, max_amount = 25000000.00,	title = 'Лизинг оборудования оптом'
 WHERE id = 3;
 
 COMMIT TRANSACTION;
@@ -984,5 +983,80 @@ COMMIT TRANSACTION;
 SELECT rate, title, max_amount FROM [Credit product] WHERE id = 3;
 </pre></code>
 <img src="pictures//lab7_pics/2.4.2.s2.png" alt="2.4.2.s2" width="800">
+5.Записать протокол выполнения сценариев.
+
+6.Установить в обоих сеансах уровень изоляции REPEATABLE READ. Выполнить сценарии проверки: 
+
+- неповторяющегося чтения, 
+
+Сеанс 1:
+
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+BEGIN TRANSACTION;
+
+SELECT * FROM Client WHERE id = 2;
+
+WAITFOR DELAY '00:00:07';
+
+SELECT * FROM Client WHERE id = 2;
+
+COMMIT TRANSACTION;
+</pre></code>
+<img src="pictures//lab7_pics/2.6.1.s1.png" alt="2.6.1.s1" width="800">
+
+Сеанс 2:
+
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+BEGIN TRANSACTION;
+
+UPDATE Client 
+SET company = 'ООО "Бетономешалка"',
+    contact_person = 'Сергей Аннов'
+WHERE id = 2;
+
+COMMIT TRANSACTION;
+
+SELECT * FROM Client WHERE id = 2;
+</pre></code>
+<img src="pictures//lab7_pics/2.6.1.s2.png" alt="2.6.1.s2" width="800">
+
+- фантома, 
+
+Сеанс 1:
+
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+BEGIN TRANSACTION;
+
+SELECT * FROM Client WHERE company LIKE '%ООО%'
+
+WAITFOR DELAY '00:00:07';
+
+SELECT * FROM Client WHERE company LIKE '%ООО%'
+
+COMMIT TRANSACTION;
+</pre></code>
+<img src="pictures//lab7_pics/2.6.2.s1.png" alt="2.6.2.s1" width="800">
+
+Сеанс 2:
+
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+BEGIN TRANSACTION;
+
+INSERT INTO Client (phone_number, contact_person, company, address)
+VALUES ('+79168889900', 'Фантом Фантомыч', 'ООО "Ghostbusters"', 'Ярославль, Союзная 144');
+
+COMMIT TRANSACTION;
+
+SELECT * FROM Client WHERE company LIKE '%ООО%'
+</pre></code>
+<img src="pictures//lab7_pics/2.6.2.s2.png" alt="2.6.2.s2" width="800">
 </div>
 
