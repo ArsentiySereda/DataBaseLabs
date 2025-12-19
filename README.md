@@ -828,6 +828,7 @@ GO
 1. Запустить клиента и соединиться с базой данных. Открыть второе окно для ввода текста запросов (Ctrl+N в первом окне).
     
 2. Установить в обоих сеансах уровень изоляции READ UNCOMMITTED. Выполнить сценарии проверки:
+   
 - потерянных изменений,
 Сеанс 1:
 <pre><code>
@@ -866,7 +867,7 @@ SELECT * FROM Client WHERE id = 10;
 </code></pre>
 <img src="pictures//lab7_pics/2.2.1.s2.png" alt="2.2.1.s2" width="800">
 
--грязного чтения,
+ - грязного чтения,
 Сеанс 1:
 <code><pre>
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
@@ -905,7 +906,7 @@ SELECT * FROM Client WHERE id = 6;
 3. Записать протокол выполнения сценариев. 
 	
 4.Установить в обоих сеансах уровень изоляции READ COMMITTED. Выполнить сценарии проверки: 
-- грязного чтения
+ - грязного чтения
 
 Сеанс 1:
 
@@ -948,7 +949,7 @@ SELECT * FROM Client WHERE id = 7;
 </pre></code>
 <img src="pictures//lab7_pics/2.4.1.s2.png" alt="2.4.1.s2" width="800">
 
--неповторяющееся чтение
+ - неповторяющееся чтение
 
 Сеанс 1:
 
@@ -987,7 +988,7 @@ SELECT rate, title, max_amount FROM [Credit product] WHERE id = 3;
 
 6.Установить в обоих сеансах уровень изоляции REPEATABLE READ. Выполнить сценарии проверки: 
 
-- неповторяющегося чтения, 
+ - неповторяющегося чтения, 
 
 Сеанс 1:
 
@@ -1058,5 +1059,46 @@ COMMIT TRANSACTION;
 SELECT * FROM Client WHERE company LIKE '%ООО%'
 </pre></code>
 <img src="pictures//lab7_pics/2.6.2.s2.png" alt="2.6.2.s2" width="800">
+7. Записать протокол выполнения сценариев. 
+
+8. Установить в обоих сеансах уровень изоляции SERIALIZABLE. Выполнить сценария проверки 
+ - фантома
+ - 
+Сеанс 1:
+
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+BEGIN TRANSACTION;
+
+SELECT * FROM Client WHERE company LIKE '%ООО%'
+
+WAITFOR DELAY '00:00:07';
+
+SELECT * FROM Client WHERE company LIKE '%ООО%'
+
+COMMIT TRANSACTION;
+</pre></code>
+<img src="pictures//lab7_pics/2.8.1.s1.png" alt="2.8.1.s1" width="800">
+
+Сеанс 2:
+
+<code><pre>
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+BEGIN TRANSACTION;
+
+INSERT INTO Client (phone_number, contact_person, company, address)
+VALUES ('+79168889900', 'Фантом Фантомыч', 'ООО "Ghostbusters"', 'Ярославль, Союзная 144');
+
+COMMIT TRANSACTION;
+
+SELECT * FROM Client WHERE company LIKE '%ООО%'
+</pre></code>
+<img src="pictures//lab7_pics/2.8.1.s2.png" alt="2.8.1.s2" width="800">
+
+Полный код лабораторной работы:
+![Сеанс 1](/transakziiLabScreen1.sql)
+![Сеанс 1](/transakziiLabScreen2.sql)
 </div>
 
