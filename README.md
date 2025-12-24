@@ -1811,5 +1811,9 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 
 </pre></code>
 <img src="pictures//lab8_pics/2.7.1.jpg" alt="2.7.1.jpg" width="700">
+
+Полный код лабораторной работы:
+![MongoDB](/MongoDBLab.txt)
+
 </div>
 
