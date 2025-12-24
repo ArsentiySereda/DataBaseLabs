@@ -1408,25 +1408,155 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
     }
 	).sort({ name: 1 })
 </pre></code>
-<img src="pictures//lab8_pics/1.5.1.jpg" alt="1.5.1.jpg" width="400">
+<img src="pictures//lab8_pics/1.5.1.jpg" alt="1.5.1.jpg" width="600">
 
 6.	Найдите  рестораны, которые относятся к району Bronx и готовят American  или Chinese блюда.
    
 <code><pre>
 	db.restaurants.find(
     {
-        name: { $regex: '^Wil' }
+        borough: "Bronx",
+        $or: {
+            { cuisine: "American" },
+            { cuisine: "Chinese" }
+        }
     },
     {
         _id: 0,
-        restaurant_id: 1,
         name: 1,
         borough: 1,
-        cuisine: 1
+        cuisine: 1,
+        restaurant_id: 1
     }
-	).sort({ name: 1 })
+)
 </pre></code>
 <img src="pictures//lab8_pics/1.6.1.jpg" alt="1.6.1.jpg" width="400">
 <img src="pictures//lab8_pics/1.6.2.jpg" alt="1.6.2.jpg" width="400">
+
+7.	Найдите идентификатор ресторана, название и оценки для тех ресторанов, которые  «2014-08-11T00: 00: 00Z» набрали 9 баллов за оценку А
+
+<code><pre>
+	db.restaurants.find(
+  {
+    "grades": {
+      $elemMatch: {
+        "date.$date": 1407715200000,
+        "grade": "A",
+        "score": 9
+      }
+    }
+  },
+  {
+    _id: 0,
+    restaurant_id: 1,
+    name: 1,
+    "grades": 1
+  }
+ )
+</pre></code>
+<img src="pictures//lab8_pics/1.7.1.jpg" alt="1.7.1.jpg" width="600">
+
+8.	В каждом районе посчитайте количество ресторанов по каждому виду кухни. Документ должен иметь формат  borough, cuisine, count 
+
+<code><pre>
+	db.restaurants.aggregate({
+  {
+    $group: {
+      _id: {
+        район: "$borough",
+        кухня: "$cuisine"
+      },
+      количество: { $sum: 1 }
+    }
+  }
+  ])
+
+</pre></code>
+<img src="pictures//lab8_pics/1.8.1.jpg" alt="1.8.1.jpg" width="600">
+
+9.	В  районе Bronx найдите ресторан с минимальной суммой набранных баллов.
+
+<code><pre>
+	db.restaurants.aggregate(]
+  { $match: { borough: "Bronx" } },
+  { $addFields: { totalScore: { $sum: "$grades.score" } } },
+  { $sort: { totalScore: 1 } },
+  { $limit: 1 },
+  { $project: { _id: 0, name: 1, borough: 1, totalScore: 1 } }
+])
+
+</pre></code>
+<img src="pictures//lab8_pics/1.9.1.jpg" alt="1.9.1.jpg" width="800">
+
+10.	 Добавьте в коллекцию свой любимый ресторан.
+
+<code><pre>
+	db.restaurants.insertOne({
+  name: "ТортинКа'фе",
+  borough: "Вологда",
+  cuisine: "Русская",
+  address: {
+    building: "146",
+    street: "Ленинградская улица",
+    zipcode: 160000
+  },
+  grades: {
+    {
+      date: { "$date": new Date().getTime() },
+      grade: "A+",
+      score: 10
+    }
+  },
+  restaurant_id: "99999999" 
+})
+])
+
+</pre></code>
+<img src="pictures//lab8_pics/1.10.1.jpg" alt="1.10.1.jpg" width="800">
+
+11.	 В добавленном ресторане укажите информацию о времени его работы.
+
+<code><pre>
+	db.restaurants.updateOne(
+  { name: "ТортинКа'фе" },
+  {
+    $set: {
+      hours: {
+        monday: "10:00-22:00",
+        tuesday: "10:00-22:00",
+        wednesday: "10:00-22:00",
+        thursday: "10:00-23:00",
+        friday: "10:00-23:00",
+        saturday: "11:00-23:00",
+        sunday: "11:00-21:00"
+      }
+    }
+  }
+)
+
+</pre></code>
+<img src="pictures//lab8_pics/1.11.1.jpg" alt="1.11.1.jpg" width="800">
+
+12.	 Измените время работы вашего любимого ресторана.
+
+<code><pre>
+	db.restaurants.updateOne(
+  { name: "ТортинКа'фе" }, 
+  {
+    $set: {
+      hours: {
+        monday: "10:00-20:00",
+        tuesday: "10:00-20:00",
+        wednesday: "10:00-20:00",
+        thursday: "10:00-20:00",
+        friday: "10:00-20:00",
+        saturday: "11:00-2:00",
+        sunday: "11:00-2:00"
+      }
+    }
+  }
+)
+</pre></code>
+<img src="pictures//lab8_pics/1.12.1.jpg" alt="1.12.1.jpg" width="800">
 </div>
 
