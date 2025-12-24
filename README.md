@@ -9,6 +9,7 @@
   <a href="#-lab5"><img alt="lab5" src="https://img.shields.io/badge/Lab5-pink"></a>
   <a href="#-lab6"><img alt="lab6" src="https://img.shields.io/badge/Lab6-green"></a>
   <a href="#-lab7"><img alt="lab7" src="https://img.shields.io/badge/Lab7-orange"></a>
+  <a href="#-lab8"><img alt="lab8" src="https://img.shields.io/badge/Lab8-black"></a>
 </p>
 <h3 align="center">
   <a href="#client"></a>
@@ -1305,5 +1306,34 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 Полный код лабораторной работы:
 ![Сеанс 1](/transakziiLabScreen1.sql)
 ![Сеанс 2](/transakziiLabScreen2.sql)
+
+# <img src="https://github.com/user-attachments/assets/e080adec-6af7-4bd2-b232-d43cb37024ac" width="20" height="20"/> Lab8
+[Назад](#content)
+<h3 align="center">
+  <a href="#client"></a>
+	</h3>
+
+<h3>Лабораторная работа по MongoDB</h3>
+  <p>Задание 1
+Выполните импорт коллекции из файла restaurants.json
+Выполните запросы :
+</p>
+1.	Выведите все документы коллекции Ресторан в формате: restaurant_id, name, borough и cuisine, вывод  _id  для всех документов исключить.
+<code><pre>
+	db.restaurants.find(
+    {},
+    { 
+        _id: 0,
+        restaurant_id: 1,
+        name: 1,
+        borough: 1,
+        cuisine: 1 
+    }
+)
+</pre></code>
+<img src="pictures//lab8_pics/1.1.1.jpg" alt="1.1.1.jpg" width="400">
+<img src="pictures//lab8_pics/1.1.2.jpg" alt="1.1.2.jpg" width="400">
+<img src="pictures//lab8_pics/1.1.3.jpg" alt="1.1.3.jpg" width="400">
+<img src="pictures//lab8_pics/1.1.4.jpg" alt="1.1.4.jpg" width="400">
 </div>
 
