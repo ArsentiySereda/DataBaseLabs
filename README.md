@@ -1318,7 +1318,9 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 Выполните импорт коллекции из файла restaurants.json
 Выполните запросы :
 </p>
+
 1.	Выведите все документы коллекции Ресторан в формате: restaurant_id, name, borough и cuisine, вывод  _id  для всех документов исключить.
+   
 <code><pre>
 	db.restaurants.find(
     {},
@@ -1335,5 +1337,96 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 <img src="pictures//lab8_pics/1.1.2.jpg" alt="1.1.2.jpg" width="400">
 <img src="pictures//lab8_pics/1.1.3.jpg" alt="1.1.3.jpg" width="400">
 <img src="pictures//lab8_pics/1.1.4.jpg" alt="1.1.4.jpg" width="400">
+
+2.	Выведите  первые 5 ресторанов в алфавитном порядке, которые находятся в районе Bronx.
+   
+<code><pre>
+	db.restaurants.find(
+    { borough: "Bronx" }, 
+    { 
+        _id: 0,        
+        name: 1,     
+        borough: 1,    
+        cuisine: 1     
+    }
+).sort({ name: 1 }).limit(5)            
+</pre></code>
+<img src="pictures//lab8_pics/1.2.1.jpg" alt="1.2.1.jpg" width="800">
+
+3.	Найдите рестораны, которые набрали более 80, но менее 100 баллов.
+   
+<code><pre>
+	db.restaurants.find(
+    {
+        "grades": {
+            $elemMatch: {
+                "score": { $gt: 80, $lt: 100 }
+            }
+        }
+    },
+    {
+        _id: 0,
+        name: 1,
+        borough: 1,
+        cuisine: 1,
+        "grades.score": 1
+    }
+)            
+</pre></code>
+<img src="pictures//lab8_pics/1.3.1.jpg" alt="1.3.1.jpg" width="600">
+
+4.	Найдите рестораны, которые не относятся к  типу кухни American, получили оценку «А», не расположены  в районе Brooklyn.  Документ должен отображаться в соответствии с кухней в порядке убывания.
+   
+<code><pre>
+	db.restaurants.find(
+  {
+    cuisine: { $ne: "American" },
+    borough: { $ne: "Brooklyn" },
+    grades: { $elemMatch: { grade: "A" } }
+  },
+  { _id: 0, name: 1, borough: 1, cuisine: 1, restaurant_id: 1, grades: 1 }
+	).sort({ cuisine: -1 })
+</pre></code>
+<img src="pictures//lab8_pics/1.4.1.jpg" alt="1.4.1.jpg" width="400">
+<img src="pictures//lab8_pics/1.4.2.jpg" alt="1.4.2.jpg" width="400">
+<img src="pictures//lab8_pics/1.4.3.jpg" alt="1.4.3.jpg" width="400">
+<img src="pictures//lab8_pics/1.4.4.jpg" alt="1.4.4.jpg" width="400">
+
+5.	Найдите идентификатор ресторана, название, район и кухню для тех ресторанов, чье название начинается с первых трех букв назвали «Wil»
+   
+<code><pre>
+	db.restaurants.find(
+    {
+        name: { $regex: '^Wil' }
+    },
+    {
+        _id: 0,
+        restaurant_id: 1,
+        name: 1,
+        borough: 1,
+        cuisine: 1
+    }
+	).sort({ name: 1 })
+</pre></code>
+<img src="pictures//lab8_pics/1.5.1.jpg" alt="1.5.1.jpg" width="400">
+
+6.	Найдите  рестораны, которые относятся к району Bronx и готовят American  или Chinese блюда.
+   
+<code><pre>
+	db.restaurants.find(
+    {
+        name: { $regex: '^Wil' }
+    },
+    {
+        _id: 0,
+        restaurant_id: 1,
+        name: 1,
+        borough: 1,
+        cuisine: 1
+    }
+	).sort({ name: 1 })
+</pre></code>
+<img src="pictures//lab8_pics/1.6.1.jpg" alt="1.6.1.jpg" width="400">
+<img src="pictures//lab8_pics/1.6.2.jpg" alt="1.6.2.jpg" width="400">
 </div>
 
