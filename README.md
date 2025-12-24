@@ -9,7 +9,7 @@
   <a href="#-lab5"><img alt="lab5" src="https://img.shields.io/badge/Lab5-pink"></a>
   <a href="#-lab6"><img alt="lab6" src="https://img.shields.io/badge/Lab6-green"></a>
   <a href="#-lab7"><img alt="lab7" src="https://img.shields.io/badge/Lab7-orange"></a>
-  <a href="#-lab8"><img alt="lab8" src="https://img.shields.io/badge/Lab8-black"></a>
+  <a href="#-lab8"><img alt="lab8" src="https://img.shields.io/badge/Lab8-white"></a>
 </p>
 <h3 align="center">
   <a href="#client"></a>
