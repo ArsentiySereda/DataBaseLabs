@@ -1,0 +1,410 @@
+z1p1
+
+db.restaurants.find(
+    {},
+    { 
+        _id: 0,
+        restaurant_id: 1,
+        name: 1,
+        borough: 1,
+        cuisine: 1 
+    }
+)
+
+z1p2
+db.restaurants.find(
+    { borough: "Bronx" }, 
+    { 
+        _id: 0,        
+        name: 1,     
+        borough: 1,    
+        cuisine: 1     
+    }
+).sort({ name: 1 }).limit(5)            
+
+z1p3
+
+db.restaurants.find(
+    {
+        "grades": {
+            $elemMatch: {
+                "score": { $gt: 80, $lt: 100 }
+            }
+        }
+    },
+    {
+        _id: 0,
+        name: 1,
+        borough: 1,
+        cuisine: 1,
+        "grades.score": 1
+    }
+)
+
+z1p4
+
+db.restaurants.find(
+  {
+    cuisine: { $ne: "American" },
+    borough: { $ne: "Brooklyn" },
+    grades: { $elemMatch: { grade: "A" } }
+  },
+  { _id: 0, name: 1, borough: 1, cuisine: 1, restaurant_id: 1, grades: 1 }
+).sort({ cuisine: -1 })
+
+z1p5
+
+db.restaurants.find(
+    {
+        name: { $regex: '^Wil' }
+    },
+    {
+        _id: 0,
+        restaurant_id: 1,
+        name: 1,
+        borough: 1,
+        cuisine: 1
+    }
+).sort({ name: 1 })
+
+z1p6
+
+db.restaurants.find(
+    {
+        borough: "Bronx",
+        $or: [
+            { cuisine: "American" },
+            { cuisine: "Chinese" }
+        ]
+    },
+    {
+        _id: 0,
+        name: 1,
+        borough: 1,
+        cuisine: 1,
+        restaurant_id: 1
+    }
+)
+
+z1p7
+
+db.restaurants.find(
+  {
+    "grades": {
+      $elemMatch: {
+        "date.$date": 1407715200000,
+        "grade": "A",
+        "score": 9
+      }
+    }
+  },
+  {
+    _id: 0,
+    restaurant_id: 1,
+    name: 1,
+    "grades": 1
+  }
+)
+
+z1p8
+
+db.restaurants.aggregate([
+  {
+    $group: {
+      _id: {
+        район: "$borough",
+        кухня: "$cuisine"
+      },
+      количество: { $sum: 1 }
+    }
+  }
+])
+
+z1p9
+
+db.restaurants.aggregate([
+  { $match: { borough: "Bronx" } },
+  { $addFields: { totalScore: { $sum: "$grades.score" } } },
+  { $sort: { totalScore: 1 } },
+  { $limit: 1 },
+  { $project: { _id: 0, name: 1, borough: 1, totalScore: 1 } }
+])
+
+z1p10
+
+db.restaurants.insertOne({
+  name: "ТортинКа'фе",
+  borough: "Вологда",
+  cuisine: "Русская",
+  address: {
+    building: "146",
+    street: "Ленинградская улица",
+    zipcode: 160000
+  },
+  grades: [
+    {
+      date: { "$date": new Date().getTime() },
+      grade: "A+",
+      score: 10
+    }
+  ],
+  restaurant_id: "99999999" 
+})
+
+z1p11
+
+db.restaurants.updateOne(
+  { name: "ТортинКа'фе" },
+  {
+    $set: {
+      hours: {
+        monday: "10:00-22:00",
+        tuesday: "10:00-22:00",
+        wednesday: "10:00-22:00",
+        thursday: "10:00-23:00",
+        friday: "10:00-23:00",
+        saturday: "11:00-23:00",
+        sunday: "11:00-21:00"
+      }
+    }
+  }
+)
+
+z1p12
+
+db.restaurants.updateOne(
+  { name: "ТортинКа'фе" }, 
+  {
+    $set: {
+      hours: {
+        monday: "10:00-20:00",
+        tuesday: "10:00-20:00",
+        wednesday: "10:00-20:00",
+        thursday: "10:00-20:00",
+        friday: "10:00-20:00",
+        saturday: "11:00-2:00",
+        sunday: "11:00-2:00"
+      }
+    }
+  }
+)
+
+z2p1
+
+db.weather_data.aggregate([
+    {
+        $group: {
+            _id: "$year",
+            minTemp: { $min: "$temperature" },
+            maxTemp: { $max: "$temperature" }
+        }
+    },
+    {
+        $project: {
+            year: "$_id",
+            minTemperature: "$minTemp",
+            maxTemperature: "$maxTemp",
+            temperatureDifference: { $subtract: ["$maxTemp", "$minTemp"] },
+            _id: 0
+        }
+    },
+    {
+        $sort: { year: 1 }
+    }
+])
+
+z2p2
+
+db.weather_data.aggregate([
+    {
+        $group: {
+            _id: { year: "$year", month: "$month", day: "$day" },
+            year: { $first: "$year" },
+            avgDailyTemp: { $avg: "$temperature" }
+        }
+    },
+    {
+        $sort: { avgDailyTemp: 1 }
+    },
+    {
+        $group: {
+            _id: "$year",
+            days: { $push: "$avgDailyTemp" },
+            count: { $sum: 1 }
+        }
+    },
+    {
+        $project: {
+            year: "$_id",
+            avgWithoutExtremes: {
+                $avg: {
+                    $slice: [
+                        "$days",
+                        10,
+                        { $subtract: ["$count", 20] }
+                    ]
+                }
+            },
+            _id: 0
+        }
+    }
+])
+
+z2p3
+
+db.weather.aggregate([
+    {
+        $match: {
+            wind_direction: /Южный|Ю|S|южный|s/i
+        }
+    },
+    {
+        $sort: { temperature: 1 }
+    },
+    {
+        $limit: 10
+    },
+    {
+        $facet: {
+            records: [
+                {
+                    $project: {
+                        _id: 0,
+                        date: {
+                            $concat: [
+                                { $toString: "$year" }, "-",
+                                { $toString: "$month" }, "-",
+                                { $toString: "$day" }, " ",
+                                { $toString: "$hour" }, ":00"
+                            ]
+                        },
+                        temperature: "$temperature",
+                        wind_direction: "$wind_direction",
+                        wind_speed: "$wind"
+                    }
+                }
+            ],
+            average: [
+                {
+                    $group: {
+                        _id: null,
+                        avgTemperature: { $avg: "$temperature" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        averageTemperature: { $round: ["$avgTemperature", 2] }
+                    }
+                }
+            ]
+        }
+    }
+])
+
+z2p4
+
+db.weather.aggregate([
+    { $match: { temperature: { $lt: 0 }, code: "SN" } },
+    { $group: { _id: { year: "$year", month: "$month", day: "$day" } } },
+    { $count: "total:" }
+])
+
+z2p5
+
+db.weather.aggregate([
+    {
+        $match: {
+            month: { $in: [12, 1, 2] },
+            code: { $in: ["SN", "SG", "GS", "RA", "DZ", "SH"] }
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            snowCount: {
+                $sum: {
+                    $cond: [
+                        { $in: ["$code", ["SN", "SG", "GS"]] },
+                        1,
+                        0
+                    ]
+                }
+            },
+            rainCount: {
+                $sum: {
+                    $cond: [
+                        { $in: ["$code", ["RA", "DZ", "SH"]] },
+                        1,
+                        0
+                    ]
+                }
+            }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            snow: "$snowCount",
+            rain: "$rainCount",
+            difference: { $subtract: ["$snowCount", "$rainCount"] }
+        }
+    }
+])
+
+z2p6
+
+db.weather.aggregate([
+    { $group: { 
+        _id: { year: "$year", month: "$month", day: "$day" },
+        t: { $sum: 1 },
+        c: { $sum: { $cond: [{ $eq: ["$code", "CL"] }, 1, 0] } },
+        p: { $sum: { $cond: [{ $in: ["$code", ["SN", "RA"]] }, 1, 0] } }
+    }},
+    { $match: { $expr: { $gt: [{ $divide: ["$c", "$t"] }, 0.75] } } },
+    { $group: { 
+        _id: null, 
+        d: { $sum: 1 }, 
+        pd: { $sum: { $cond: [{ $gt: ["$p", 0] }, 1, 0] } } 
+    }},
+    { $project: { 
+        _id: 0,
+        probability: { $divide: ["$pd", "$d"] }
+    }}
+])
+
+z2p7
+
+db.weather.aggregate([
+    {
+        $match: { month: { $in: [12, 1, 2] } }
+    },
+    {
+        $group: {
+            _id: null,
+            originalAvg: { $avg: "$temperature" },
+            adjustedSum: {
+                $sum: {
+                    $cond: [
+                        { $eq: [{ $mod: ["$day", 2] }, 1] },
+                        { $add: ["$temperature", 1] },
+                        "$temperature"
+                    ]
+                }
+            },
+            count: { $sum: 1 }
+        }
+    },
+    {
+        $project: {
+            original: "$originalAvg",
+            new: { $divide: ["$adjustedSum", "$count"] },
+            Change: {
+                $subtract: [
+                    { $divide: ["$adjustedSum", "$count"] },
+                    "$originalAvg"
+                ]
+            }
+        }
+    }
+])
