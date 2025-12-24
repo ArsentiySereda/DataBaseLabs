@@ -1486,7 +1486,7 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 ])
 
 </pre></code>
-<img src="pictures//lab8_pics/1.9.1.jpg" alt="1.9.1.png" width="800">
+<img src="pictures//lab8_pics/1.9.1.png" alt="1.9.1.png" width="800">
 
 10.	 Добавьте в коллекцию свой любимый ресторан.
 
