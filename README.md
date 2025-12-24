@@ -1313,7 +1313,7 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
   <a href="#client"></a>
 	</h3>
 
-<h3>Лабораторная работа по MongoDB</h3>
+<h3><p>Лабораторная работа по MongoDB</p></h3>
   <p>Задание 1
 Выполните импорт коллекции из файла restaurants.json
 Выполните запросы :
@@ -1486,7 +1486,7 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 ])
 
 </pre></code>
-<img src="pictures//lab8_pics/1.9.1.jpg" alt="1.9.1.jpg" width="800">
+<img src="pictures//lab8_pics/1.9.1.jpg" alt="1.9.1.png" width="800">
 
 10.	 Добавьте в коллекцию свой любимый ресторан.
 
@@ -1558,5 +1558,258 @@ SELECT * FROM Client WHERE company LIKE '%ООО%'
 )
 </pre></code>
 <img src="pictures//lab8_pics/1.12.1.jpg" alt="1.12.1.jpg" width="800">
+
+<p>Задание 2 
+Выполните импорт коллекции из файла weather.json
+Выполните запросы с использованием Aggregate:
+</p>
+1. Какова разница между максимальной и минимальной температурой в течение года? 
+
+<code><pre>
+	db.weather_data.aggregate([
+    {
+        $group: {
+            _id: "$year",
+            minTemp: { $min: "$temperature" },
+            maxTemp: { $max: "$temperature" }
+        }
+    },
+    {
+        $project: {
+            year: "$_id",
+            minTemperature: "$minTemp",
+            maxTemperature: "$maxTemp",
+            temperatureDifference: { $subtract: ["$maxTemp", "$minTemp"] },
+            _id: 0
+        }
+    },
+    {
+        $sort: { year: 1 }
+    }
+])
+</pre></code>
+<img src="pictures//lab8_pics/2.1.1.jpg" alt="2.1.1.jpg" width="700">
+
+2. Какова средняя температура в году, если исключить 10 дней с самой низкой температурой и 10 дней с самой высокой?
+
+   
+<code><pre>
+	db.weather_data.aggregate([
+    {
+        $group: {
+            _id: { year: "$year", month: "$month", day: "$day" },
+            year: { $first: "$year" },
+            avgDailyTemp: { $avg: "$temperature" }
+        }
+    },
+    {
+        $sort: { avgDailyTemp: 1 }
+    },
+    {
+        $group: {
+            _id: "$year",
+            days: { $push: "$avgDailyTemp" },
+            count: { $sum: 1 }
+        }
+    },
+    {
+        $project: {
+            year: "$_id",
+            avgWithoutExtremes: {
+                $avg: {
+                    $slice: [
+                        "$days",
+                        10,
+                        { $subtract: ["$count", 20] }
+                    ]
+                }
+            },
+            _id: 0
+        }
+    }
+])
+</pre></code>
+<img src="pictures//lab8_pics/2.2.1.jpg" alt="2.2.1.jpg" width="700">
+
+3. Найти первые 10 записей с самой низкой погодой, когда дул ветер с юга и посчитайте  среднюю температуры для этих записей
+
+<code><pre>
+	db.weather.aggregate({
+    {
+        $match: {
+            wind_direction: /Южный|Ю|S|южный|s/i
+        }
+    },
+    {
+        $sort: { temperature: 1 }
+    },
+    {
+        $limit: 10
+    },
+    {
+        $facet: {
+            records: {
+                {
+                    $project: {
+                        _id: 0,
+                        date: {
+                            $concat: {
+                                { $toString: "$year" }, "-",
+                                { $toString: "$month" }, "-",
+                                { $toString: "$day" }, " ",
+                                { $toString: "$hour" }, ":00"
+                            ]
+                        },
+                        temperature: "$temperature",
+                        wind_direction: "$wind_direction",
+                        wind_speed: "$wind"
+                    }
+                }
+            ],
+            average: [
+                {
+                    $group: {
+                        _id: null,
+                        avgTemperature: { $avg: "$temperature" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        averageTemperature: { $round: ["$avgTemperature", 2] }
+                    }
+                }
+            ]
+        }
+    }
+])
+</pre></code>
+<img src="pictures//lab8_pics/2.3.1.jpg" alt="2.3.1.jpg" width="400">
+<img src="pictures//lab8_pics/2.3.2.jpg" alt="2.3.2.jpg" width="400">
+
+4. Подсчитайте количество дней, когда шел снег. (Будем считать снегом осадки, которые выпали,  когда температура была ниже нуля)
+
+<code><pre>
+	db.weather.aggregate({
+    { $match: { temperature: { $lt: 0 }, code: "SN" } },
+    { $group: { _id: { year: "$year", month: "$month", day: "$day" } } },
+    { $count: "total:" }
+])
+
+</pre></code>
+<img src="pictures//lab8_pics/2.4.1.jpg" alt="2.4.1.jpg" width="700">
+
+5. В течение зимы иногда шел снег, а иногда дождь. Насколько больше (или меньше) выпало осадков в виде снега.
+
+<code><pre>
+	db.weather.aggregate([
+    {
+        $match: {
+            month: { $in: [12, 1, 2] },
+            code: { $in: ["SN", "SG", "GS", "RA", "DZ", "SH"] }
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            snowCount: {
+                $sum: {
+                    $cond: [
+                        { $in: ["$code", ["SN", "SG", "GS"]] },
+                        1,
+                        0
+                    ]
+                }
+            },
+            rainCount: {
+                $sum: {
+                    $cond: [
+                        { $in: ["$code", ["RA", "DZ", "SH"]] },
+                        1,
+                        0
+                    ]
+                }
+            }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            snow: "$snowCount",
+            rain: "$rainCount",
+            difference: { $subtract: ["$snowCount", "$rainCount"] }
+        }
+    }
+])
+
+
+</pre></code>
+<img src="pictures//lab8_pics/2.5.1.jpg" alt="2.5.1.jpg" width="700">
+
+6. Какова вероятность того что в ясный день выпадут осадки? (Предположим, что день считается ясным, если ясная погода фиксируется более чем в 75% случаев)
+
+<code><pre>
+	db.weather.aggregate([
+    { $group: { 
+        _id: { year: "$year", month: "$month", day: "$day" },
+        t: { $sum: 1 },
+        c: { $sum: { $cond: [{ $eq: ["$code", "CL"] }, 1, 0] } },
+        p: { $sum: { $cond: [{ $in: ["$code", ["SN", "RA"]] }, 1, 0] } }
+    }},
+    { $match: { $expr: { $gt: [{ $divide: ["$c", "$t"] }, 0.75] } } },
+    { $group: { 
+        _id: null, 
+        d: { $sum: 1 }, 
+        pd: { $sum: { $cond: [{ $gt: ["$p", 0] }, 1, 0] } } 
+    }},
+    { $project: { 
+        _id: 0,
+        probability: { $divide: ["$pd", "$d"] }
+    }}
+])
+])
+
+</pre></code>
+<img src="pictures//lab8_pics/2.6.1.jpg" alt="2.6.1.jpg" width="700">
+
+7. Увеличьте температуру на один градус при каждом измерении в нечетный день во время зимы.  На сколько градусов изменилась средняя температура?
+
+<code><pre>
+	db.weather.aggregate([
+    {
+        $match: { month: { $in: [12, 1, 2] } }
+    },
+    {
+        $group: {
+            _id: null,
+            originalAvg: { $avg: "$temperature" },
+            adjustedSum: {
+                $sum: {
+                    $cond: [
+                        { $eq: [{ $mod: ["$day", 2] }, 1] },
+                        { $add: ["$temperature", 1] },
+                        "$temperature"
+                    ]
+                }
+            },
+            count: { $sum: 1 }
+        }
+    },
+    {
+        $project: {
+            original: "$originalAvg",
+            new: { $divide: ["$adjustedSum", "$count"] },
+            Change: {
+                $subtract: [
+                    { $divide: ["$adjustedSum", "$count"] },
+                    "$originalAvg"
+                ]
+            }
+        }
+    }
+])
+
+</pre></code>
+<img src="pictures//lab8_pics/2.7.1.jpg" alt="2.7.1.jpg" width="700">
 </div>
 
